@@ -32,11 +32,35 @@ const NODE_DATA = [
   { label: 'business',      x:  0.32, y: -0.62, z:  0.00, color: '#4338ca', geo: 'dodeca' },
 ] as const
 
+// ── Phase 3 — card content per vertical ──────────────────────────────────────
+interface CardData { name: string; blurb: string; tags: string[]; color: string }
+const NODE_CARDS: CardData[] = [
+  { name: 'Restaurant',     blurb: 'AI-powered ordering, reservations & loyalty built for your concept',    tags: ['POS',        'Reservations', 'Loyalty'],      color: '#818cf8' },
+  { name: 'Smoke Shop',     blurb: 'Compliant age-check, inventory automation & customer rewards',          tags: ['Compliance', 'Inventory',    'Rewards'],      color: '#a78bfa' },
+  { name: 'Gaming Venue',   blurb: 'Bookings, tournaments & leaderboards — all in one custom app',          tags: ['Bookings',   'Tournaments',  'Leaderboards'], color: '#c4b5fd' },
+  { name: 'Ranch & Events', blurb: 'Ticketing, waivers & guest management for outdoor venues',              tags: ['Ticketing',  'Waivers',      'Capacity'],     color: '#6366f1' },
+  { name: 'Booking Venue',  blurb: 'Real-time scheduling, automated reminders & seamless payments',         tags: ['Scheduling', 'Payments',     'Reminders'],    color: '#8b5cf6' },
+  { name: 'Business',       blurb: 'Custom AI tools, dashboards & ops automation for your team',            tags: ['Automation', 'Dashboards',   'AI Tools'],     color: '#4338ca' },
+]
+
 export default function Hero3DObject() {
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Card refs — updated imperatively inside rAF (zero React re-renders)
+  const cardRef      = useRef<HTMLDivElement>(null)
+  const cardDotRef   = useRef<HTMLDivElement>(null)
+  const cardNameRef  = useRef<HTMLDivElement>(null)
+  const cardBlurbRef = useRef<HTMLDivElement>(null)
+  const cardTagsRef  = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!containerRef.current) return
+    // Capture refs before async import so cleanup can reference them
+    const cardEl    = cardRef.current
+    const dotEl     = cardDotRef.current
+    const nameEl    = cardNameRef.current
+    const blurbEl   = cardBlurbRef.current
+    const tagsEl    = cardTagsRef.current
     let cleanup: (() => void) | undefined
 
     import('three').then((THREE) => {
@@ -73,10 +97,7 @@ export default function Hero3DObject() {
         return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
       }
       function sample(): any {
-        const x = gauss() * 0.65
-        const y = gauss() * 0.85
-        const z = gauss() * 0.13
-        return new THREE.Vector3(x, y, z)
+        return new THREE.Vector3(gauss() * 0.65, gauss() * 0.85, gauss() * 0.13)
       }
 
       for (let i = 0; i < N; i++) {
@@ -137,15 +158,14 @@ export default function Hero3DObject() {
         dodeca: new THREE.DodecahedronGeometry(0.082, 0),
       }
 
-      // Invisible hit spheres — larger than visual geometry for comfortable hover
       const hitGeo = new THREE.SphereGeometry(0.20, 4, 3)
       const hitMat = new THREE.MeshBasicMaterial({ visible: false })
 
       interface NodeObj {
         bx: number; by: number; bz: number
         solid: any; wire: any; glow: any; hit: any
-        fl:  number   // focus lerp 0 (idle) → 1 (focused)
-        fz:  number   // current lerped z offset
+        fl:  number
+        fz:  number
       }
 
       const nodeObjs: NodeObj[] = NODE_DATA.map(nd => {
@@ -179,7 +199,6 @@ export default function Hero3DObject() {
         glow.scale.setScalar(0.52)
         scene.add(glow)
 
-        // Invisible hit sphere at base position (bob is visual only — hitbox stays stable)
         const hit: any = new THREE.Mesh(hitGeo, hitMat)
         hit.position.set(nd.x, nd.y, nd.z)
         scene.add(hit)
@@ -205,8 +224,20 @@ export default function Hero3DObject() {
       }
       window.addEventListener('mousemove', onMouseMove)
 
+      // ── Phase 3: pointer-over-card guard ──────────────────────────────
+      // When mouse enters the HTML card, freeze focusedNode so it can't be cleared
+      let mouseOverCard = false
+      const onCardEnter = () => { mouseOverCard = true }
+      const onCardLeave = () => { mouseOverCard = false }
+      cardEl?.addEventListener('mouseenter', onCardEnter)
+      cardEl?.addEventListener('mouseleave', onCardLeave)
+
       // ── Focus state ───────────────────────────────────────────────────
       let focusedNode = -1
+      let prevFocused = -1
+
+      // Scratch vector for world-position projection
+      const projPos = new THREE.Vector3()
 
       // ── Animation loop ────────────────────────────────────────────────
       let raf: number
@@ -217,27 +248,26 @@ export default function Hero3DObject() {
         raf = requestAnimationFrame(animate)
         const t = clk.getElapsedTime()
 
-        // Project mouse to world plane
         rc.setFromCamera(m2d, camera)
         rc.ray.intersectPlane(zpl, m3dRaw)
         m3d.lerp(m3dRaw, 0.08)
 
-        // ── Node hover detection ───────────────────────────────────────
-        const hits = rc.intersectObjects(hitMeshes, false)
-        if (hits.length > 0) {
-          focusedNode = hitMeshes.indexOf(hits[0].object)
-        } else if (focusedNode >= 0) {
-          // Sticky hold: keep focus while mouse stays within STICKY_R of node base
-          const fn = nodeObjs[focusedNode]
-          const dx = fn.bx - m3d.x
-          const dy = fn.by - m3d.y
-          if (Math.sqrt(dx*dx + dy*dy) > STICKY_R) focusedNode = -1
+        // ── Node hover detection (skipped when mouse is over card) ────────
+        if (!mouseOverCard) {
+          const hits = rc.intersectObjects(hitMeshes, false)
+          if (hits.length > 0) {
+            focusedNode = hitMeshes.indexOf(hits[0].object)
+          } else if (focusedNode >= 0) {
+            const fn = nodeObjs[focusedNode]
+            const dx = fn.bx - m3d.x
+            const dy = fn.by - m3d.y
+            if (Math.sqrt(dx*dx + dy*dy) > STICKY_R) focusedNode = -1
+          }
+          renderer.domElement.style.cursor = focusedNode >= 0 ? 'pointer' : ''
         }
-        renderer.domElement.style.cursor = focusedNode >= 0 ? 'pointer' : ''
 
         // ── Particle physics ───────────────────────────────────────────
         pts.forEach(p => {
-          // Mouse repulsion (unchanged)
           const dx   = p.pos.x - m3d.x
           const dy   = p.pos.y - m3d.y
           const dz   = p.pos.z - m3d.z
@@ -247,7 +277,6 @@ export default function Hero3DObject() {
             p.vel.x += dx * f; p.vel.y += dy * f; p.vel.z += dz * f
           }
 
-          // Focused-node parting-cloud repulsion
           if (focusedNode >= 0) {
             const fn   = nodeObjs[focusedNode]
             const fdx  = p.pos.x - fn.solid.position.x
@@ -260,7 +289,6 @@ export default function Hero3DObject() {
             }
           }
 
-          // Spring back + drift (unchanged)
           p.vel.x += (p.bp.x - p.pos.x) * SPRING_K
           p.vel.y += (p.bp.y - p.pos.y) * SPRING_K
           p.vel.z += (p.bp.z - p.pos.z) * SPRING_K
@@ -298,7 +326,6 @@ export default function Hero3DObject() {
           const idlePulse = 1 + Math.sin(t * 0.72 + ph) * 0.07
           const isFocused = i === focusedNode
 
-          // Smooth lerp: fl 0→1 on focus, fz lerps z toward camera
           nd.fl += ((isFocused ? 1 : 0) - nd.fl) * 0.08
           nd.fz += ((nd.bz + (isFocused ? FOCUS_Z : 0)) - nd.fz) * 0.08
 
@@ -314,11 +341,9 @@ export default function Hero3DObject() {
           nd.wire.rotation.copy(nd.solid.rotation)
           nd.wire.scale.copy(nd.solid.scale)
 
-          // Glow blooms extra on focus
           nd.glow.position.copy(nd.solid.position)
           nd.glow.scale.setScalar(0.52 * idlePulse * scaleMult * (1 + nd.fl * 0.5))
 
-          // Lerp material opacity: focused bright / others dim
           const tSolid = !anyFocused ? 0.90 : isFocused ? 0.96 : 0.18
           const tWire  = !anyFocused ? 0.40 : isFocused ? 0.80 : 0.05
           const tGlow  = !anyFocused ? 0.55 : isFocused ? 0.90 : 0.04
@@ -330,6 +355,48 @@ export default function Hero3DObject() {
 
         scene.rotation.y = Math.sin(t * 0.09) * 0.05
         scene.rotation.x = Math.sin(t * 0.07) * 0.020
+
+        // ── Phase 3: card content (update on focus change only) ────────
+        if (focusedNode !== prevFocused) {
+          prevFocused = focusedNode
+          if (focusedNode >= 0) {
+            const cd = NODE_CARDS[focusedNode]
+            if (dotEl)   dotEl.style.background = cd.color
+            if (nameEl)  nameEl.textContent = cd.name
+            if (blurbEl) blurbEl.textContent = cd.blurb
+            if (tagsEl)  tagsEl.innerHTML = cd.tags.map(tag =>
+              `<span style="background:${cd.color}1a;color:${cd.color};border:1px solid ${cd.color}55;` +
+              `padding:2px 8px;border-radius:20px;font-size:10px;white-space:nowrap;line-height:1.5">${tag}</span>`
+            ).join('')
+          }
+        }
+
+        // ── Phase 3: card position + visibility (every frame) ─────────
+        if (cardEl) {
+          if (focusedNode >= 0) {
+            const nd = nodeObjs[focusedNode]
+            // Use world position (includes scene rotation) for accurate screen mapping
+            nd.solid.getWorldPosition(projPos)
+            projPos.project(camera)
+            const cw = container.offsetWidth
+            const ch = container.offsetHeight
+            const px = ( projPos.x * 0.5 + 0.5) * cw
+            const py = (-projPos.y * 0.5 + 0.5) * ch
+            // Place card to the right; flip left if near right edge
+            const CARD_W = 218, CARD_H = 172
+            let cx = px + 32
+            let cy = py - CARD_H / 2
+            if (cx + CARD_W > cw - 8) cx = px - CARD_W - 12
+            cy = Math.max(8, Math.min(cy, ch - CARD_H - 8))
+            cardEl.style.transform    = `translate(${Math.round(cx)}px,${Math.round(cy)}px)`
+            cardEl.style.opacity      = '1'
+            cardEl.style.pointerEvents = 'auto'
+          } else {
+            cardEl.style.opacity      = '0'
+            cardEl.style.pointerEvents = 'none'
+          }
+        }
+
         renderer.render(scene, camera)
       }
 
@@ -349,6 +416,8 @@ export default function Hero3DObject() {
         cancelAnimationFrame(raf)
         window.removeEventListener('mousemove', onMouseMove)
         window.removeEventListener('resize', onResize)
+        cardEl?.removeEventListener('mouseenter', onCardEnter)
+        cardEl?.removeEventListener('mouseleave', onCardLeave)
         renderer.domElement.style.cursor = ''
         renderer.dispose()
         if (containerRef.current?.contains(renderer.domElement))
@@ -360,6 +429,99 @@ export default function Hero3DObject() {
   }, [])
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%' }} aria-hidden />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      {/* Three.js canvas mount point */}
+      <div ref={containerRef} style={{ width: '100%', height: '100%' }} aria-hidden />
+
+      {/* Phase 3 — glass card overlay, positioned imperatively by rAF */}
+      <div
+        ref={cardRef}
+        style={{
+          position:        'absolute',
+          top:             0,
+          left:            0,
+          width:           '218px',
+          background:      'rgba(8, 5, 28, 0.90)',
+          backdropFilter:  'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          border:          '1px solid rgba(129, 140, 248, 0.20)',
+          borderRadius:    '14px',
+          padding:         '16px',
+          opacity:         0,
+          pointerEvents:   'none',
+          transition:      'opacity 0.18s ease',
+          willChange:      'transform, opacity',
+          userSelect:      'none',
+          zIndex:          10,
+          boxShadow:       '0 8px 40px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.04)',
+        }}
+      >
+        {/* Header row: colored dot + name */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+          <div
+            ref={cardDotRef}
+            style={{
+              width: '10px', height: '10px',
+              borderRadius: '50%',
+              flexShrink: 0,
+              background: '#818cf8',
+              boxShadow: '0 0 8px currentColor',
+            }}
+          />
+          <div
+            ref={cardNameRef}
+            style={{
+              fontWeight: 700,
+              color: '#fff',
+              fontSize: '13.5px',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.2,
+            }}
+          />
+        </div>
+
+        {/* Blurb */}
+        <div
+          ref={cardBlurbRef}
+          style={{
+            color: 'rgba(196,181,253,0.70)',
+            fontSize: '11.5px',
+            lineHeight: 1.6,
+            marginBottom: '10px',
+          }}
+        />
+
+        {/* Tags */}
+        <div
+          ref={cardTagsRef}
+          style={{
+            display: 'flex',
+            gap: '4px',
+            flexWrap: 'wrap',
+            marginBottom: '13px',
+          }}
+        />
+
+        {/* CTA */}
+        <button
+          onClick={() => document.querySelector('#portfolio')?.scrollIntoView({ behavior: 'smooth' })}
+          style={{
+            display:        'block',
+            width:          '100%',
+            padding:        '8px 0',
+            background:     'linear-gradient(135deg, rgba(79,70,229,0.88), rgba(124,58,237,0.88))',
+            border:         '1px solid rgba(99,102,241,0.45)',
+            borderRadius:   '8px',
+            color:          '#fff',
+            fontSize:       '11.5px',
+            fontWeight:     600,
+            cursor:         'pointer',
+            letterSpacing:  '0.03em',
+          }}
+        >
+          See this work →
+        </button>
+      </div>
+    </div>
   )
 }
