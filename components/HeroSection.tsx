@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import HeroCanvas from './HeroCanvas'
 import MagneticButton from './MagneticButton'
 import Hero3DLoader from './Hero3DLoader'
@@ -64,6 +65,12 @@ export default function HeroSection() {
           <MagneticButton href="#cta" className="btn-primary">Get Your App Built</MagneticButton>
           <MagneticButton href="#portfolio" className="btn-ghost">See Live Work ↓</MagneticButton>
         </div>
+
+        <Link href="/new-world" className="hero-new-world-link">
+          <span className="hero-nw-orb" />
+          Enter the New World
+          <span className="hero-nw-arrow">→</span>
+        </Link>
 
         <div className="hero-stats">
           <div className="stat">
