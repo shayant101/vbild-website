@@ -37,8 +37,8 @@ export default function Hero3DObject() {
       renderer.setClearColor(0x000000, 0)
       container.appendChild(renderer.domElement)
 
-      // ── Counts — 3× previous (1 500 + 540 + 360 = 2 400 total) ──
-      const NS = 1500, NB = 540, NR = 360
+      // More even split so shape diversity is visible (1100 + 800 + 500 = 2400)
+      const NS = 1100, NB = 800, NR = 500
       const N  = NS + NB + NR
 
       interface Particle {
@@ -50,15 +50,20 @@ export default function Hero3DObject() {
       const col = PALETTE.map(h => new THREE.Color(h))
       let si = 0, bi = 0, ri = 0
 
-      // Flattened ellipsoid → galaxy-disk distribution
+      // Gaussian distribution — dense core, sparse outliers (true galaxy concentration)
+      function gauss() {
+        const u1 = 1 - Math.random()   // avoid log(0)
+        const u2 = Math.random()
+        return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+      }
+
       function sample(): any {
-        for (;;) {
-          const x = (Math.random() * 2 - 1) * 2.4
-          const y = (Math.random() * 2 - 1) * 3.1
-          const z = (Math.random() * 2 - 1) * 0.45
-          if (x*x/5.76 + y*y/9.61 + z*z/0.20 <= 1)
-            return new THREE.Vector3(x, y, z)
-        }
+        // σ = 1.15/1.50/0.20 → ~95% within ±2.3/±3.0/±0.4
+        // Dense core feels consolidated; real outliers feel like outliers
+        const x = gauss() * 1.15
+        const y = gauss() * 1.50
+        const z = gauss() * 0.20
+        return new THREE.Vector3(x, y, z)
       }
 
       for (let i = 0; i < N; i++) {
@@ -66,7 +71,7 @@ export default function Hero3DObject() {
         const bp = sample()
         pts.push({
           bp: bp.clone(), pos: bp.clone(), vel: new THREE.Vector3(),
-          sc: 0.4 + Math.random() * 1.8,   // wide scale = size variety
+          sc: 0.5 + Math.random() * 1.5,   // 0.5–2.0 range
           tp, ix: tp === 0 ? si++ : tp === 1 ? bi++ : ri++,
         })
       }
@@ -82,11 +87,13 @@ export default function Hero3DObject() {
         return im
       }
 
-      // ~5× smaller than the "party popper" sizes — tiny but still visibly shaped
-      // sphere r=0.007 → ~2 px at scale 1; box 0.009 → ~2.7 px; ring 0.004–0.009 → ~2 px
-      const sIM = mkIM(new THREE.SphereGeometry(0.007, 5, 4), NS)
-      const bIM = mkIM(new THREE.BoxGeometry(0.009, 0.009, 0.009), NB)
-      const rIM = mkIM(new THREE.RingGeometry(0.004, 0.009, 5), NR)
+      // Sized so shape silhouette is readable at typical render scale:
+      // sphere r=0.018 → ~4px at scale 2 (clearly round)
+      // box 0.026³   → ~6px at scale 2 (clearly boxy corners)
+      // ring 0.011–0.024 → ring hole visible at scale 1.5+
+      const sIM = mkIM(new THREE.SphereGeometry(0.018, 5, 4), NS)
+      const bIM = mkIM(new THREE.BoxGeometry(0.026, 0.026, 0.026), NB)
+      const rIM = mkIM(new THREE.RingGeometry(0.011, 0.024, 6), NR)
 
       pts.forEach(p => {
         const c  = col[Math.floor(Math.random() * col.length)]
