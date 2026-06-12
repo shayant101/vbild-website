@@ -58,11 +58,11 @@ export default function Hero3DObject() {
       }
 
       function sample(): any {
-        // σ = 1.15/1.50/0.20 → ~95% within ±2.3/±3.0/±0.4
-        // Dense core feels consolidated; real outliers feel like outliers
-        const x = gauss() * 1.15
-        const y = gauss() * 1.50
-        const z = gauss() * 0.20
+        // Tight σ = 0.65/0.85/0.13 → 68% within a small core, true outliers rare
+        // This creates clear density gradient: bright dense centre, sparse edges
+        const x = gauss() * 0.65
+        const y = gauss() * 0.85
+        const z = gauss() * 0.13
         return new THREE.Vector3(x, y, z)
       }
 
@@ -71,7 +71,7 @@ export default function Hero3DObject() {
         const bp = sample()
         pts.push({
           bp: bp.clone(), pos: bp.clone(), vel: new THREE.Vector3(),
-          sc: 0.5 + Math.random() * 1.5,   // 0.5–2.0 range
+          sc: 0.3 + Math.random() * 1.1,   // 0.3–1.4 — tighter range, no giant shapes
           tp, ix: tp === 0 ? si++ : tp === 1 ? bi++ : ri++,
         })
       }
@@ -87,13 +87,13 @@ export default function Hero3DObject() {
         return im
       }
 
-      // Sized so shape silhouette is readable at typical render scale:
-      // sphere r=0.018 → ~4px at scale 2 (clearly round)
-      // box 0.026³   → ~6px at scale 2 (clearly boxy corners)
-      // ring 0.011–0.024 → ring hole visible at scale 1.5+
-      const sIM = mkIM(new THREE.SphereGeometry(0.018, 5, 4), NS)
-      const bIM = mkIM(new THREE.BoxGeometry(0.026, 0.026, 0.026), NB)
-      const rIM = mkIM(new THREE.RingGeometry(0.011, 0.024, 6), NR)
+      // Small enough to feel like particles, large enough to read shape:
+      // sphere r=0.010 → ~2px at scale 1, ~3px at scale 1.4
+      // box 0.013³   → corners visible at scale 1.0+
+      // ring 0.007–0.013 → ring silhouette at scale 1.2+
+      const sIM = mkIM(new THREE.SphereGeometry(0.010, 5, 4), NS)
+      const bIM = mkIM(new THREE.BoxGeometry(0.013, 0.013, 0.013), NB)
+      const rIM = mkIM(new THREE.RingGeometry(0.007, 0.013, 6), NR)
 
       pts.forEach(p => {
         const c  = col[Math.floor(Math.random() * col.length)]
