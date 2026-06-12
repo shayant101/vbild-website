@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import ThemeToggle from './ThemeToggle'
 
 const NAV_LINKS = [
   { label: 'Verticals', href: '#verticals' },
@@ -32,6 +33,7 @@ export default function NavBar() {
           ))}
         </ul>
         <div className="nav-right">
+          <ThemeToggle />
           <Link href="/new-world" className="nav-new-world">
             <span className="nav-nw-dot" />
             New World
