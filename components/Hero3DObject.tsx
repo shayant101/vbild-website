@@ -67,6 +67,7 @@ export default function Hero3DObject() {
       const container = containerRef.current!
       const W = container.offsetWidth  || 560
       const H = container.offsetHeight || 640
+      const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches
 
       const scene  = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100)
@@ -79,7 +80,7 @@ export default function Hero3DObject() {
       container.appendChild(renderer.domElement)
 
       // ── Particles ─────────────────────────────────────────────────────
-      const NS = 1100, NB = 800, NR = 500
+      const NS = isMobile ? 600 : 1100, NB = isMobile ? 450 : 800, NR = isMobile ? 250 : 500
       const N  = NS + NB + NR
 
       interface Particle {
@@ -158,7 +159,7 @@ export default function Hero3DObject() {
         dodeca: new THREE.DodecahedronGeometry(0.082, 0),
       }
 
-      const hitGeo = new THREE.SphereGeometry(0.20, 4, 3)
+      const hitGeo = new THREE.SphereGeometry(isMobile ? 0.30 : 0.20, 4, 3)
       const hitMat = new THREE.MeshBasicMaterial({ visible: false })
 
       interface NodeObj {
@@ -234,6 +235,34 @@ export default function Hero3DObject() {
       const onCardLeave = () => { mouseOverCard = false; lastPointerActivity = performance.now() }
       cardEl?.addEventListener('mouseenter', onCardEnter)
       cardEl?.addEventListener('mouseleave', onCardLeave)
+
+      // ── Phase 5: touch / tap handler ──────────────────────────────────
+      const onTouchStart = (e: TouchEvent) => {
+        if (e.touches.length !== 1) return
+        const touch = e.touches[0]
+        const r = container.getBoundingClientRect()
+        const tx = ((touch.clientX - r.left) / r.width)  *  2 - 1
+        const ty = -((touch.clientY - r.top)  / r.height) *  2 + 1
+        rc.setFromCamera(new THREE.Vector2(tx, ty), camera)
+        const hits = rc.intersectObjects(hitMeshes, false)
+        if (hits.length > 0) {
+          e.preventDefault()                          // prevent scroll when tapping a node
+          const idx = hitMeshes.indexOf(hits[0].object)
+          if (idx === focusedNode) {
+            // Second tap on same node → scroll to portfolio
+            document.querySelector('#portfolio')?.scrollIntoView({ behavior: 'smooth' })
+          } else {
+            focusedNode = idx
+            lastPointerActivity = performance.now()
+            attractMode = false
+          }
+        } else {
+          focusedNode = -1
+          lastPointerActivity = performance.now()
+          attractMode = false
+        }
+      }
+      if (isMobile) container.addEventListener('touchstart', onTouchStart, { passive: false })
 
       // ── Phase 4: attract mode state ───────────────────────────────────
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -399,20 +428,26 @@ export default function Hero3DObject() {
         // ── Phase 3: card position + visibility (every frame) ─────────
         if (cardEl) {
           if (focusedNode >= 0) {
-            const nd = nodeObjs[focusedNode]
-            // Use world position (includes scene rotation) for accurate screen mapping
-            nd.solid.getWorldPosition(projPos)
-            projPos.project(camera)
             const cw = container.offsetWidth
             const ch = container.offsetHeight
-            const px = ( projPos.x * 0.5 + 0.5) * cw
-            const py = (-projPos.y * 0.5 + 0.5) * ch
-            // Place card to the right; flip left if near right edge
             const CARD_W = 218, CARD_H = 172
-            let cx = px + 32
-            let cy = py - CARD_H / 2
-            if (cx + CARD_W > cw - 8) cx = px - CARD_W - 12
-            cy = Math.max(8, Math.min(cy, ch - CARD_H - 8))
+            let cx: number, cy: number
+            if (isMobile) {
+              // On touch: center card horizontally, dock near bottom
+              cx = Math.max(8, (cw - CARD_W) / 2)
+              cy = ch - CARD_H - 24
+            } else {
+              // Desktop: track node world position, flip left if near right edge
+              const nd = nodeObjs[focusedNode]
+              nd.solid.getWorldPosition(projPos)
+              projPos.project(camera)
+              const px = ( projPos.x * 0.5 + 0.5) * cw
+              const py = (-projPos.y * 0.5 + 0.5) * ch
+              cx = px + 32
+              cy = py - CARD_H / 2
+              if (cx + CARD_W > cw - 8) cx = px - CARD_W - 12
+              cy = Math.max(8, Math.min(cy, ch - CARD_H - 8))
+            }
             cardEl.style.transform    = `translate(${Math.round(cx)}px,${Math.round(cy)}px)`
             cardEl.style.opacity      = '1'
             cardEl.style.pointerEvents = 'auto'
@@ -443,6 +478,7 @@ export default function Hero3DObject() {
         window.removeEventListener('resize', onResize)
         cardEl?.removeEventListener('mouseenter', onCardEnter)
         cardEl?.removeEventListener('mouseleave', onCardLeave)
+        if (isMobile) container.removeEventListener('touchstart', onTouchStart)
         renderer.domElement.style.cursor = ''
         renderer.dispose()
         if (containerRef.current?.contains(renderer.domElement))
