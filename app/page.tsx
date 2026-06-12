@@ -5,6 +5,7 @@ import ProblemSection from '@/components/ProblemSection'
 import SolutionSection from '@/components/SolutionSection'
 import VerticalsSection from '@/components/VerticalsSection'
 import PortfolioSection from '@/components/PortfolioSection'
+import NewWorldTeaser from '@/components/NewWorldTeaser'
 import HowSection from '@/components/HowSection'
 import PricingSection from '@/components/PricingSection'
 import PaySection from '@/components/PaySection'
@@ -23,6 +24,7 @@ export default function Home() {
         <SolutionSection />
         <VerticalsSection />
         <PortfolioSection />
+        <NewWorldTeaser />
         <HowSection />
         <PricingSection />
         <PaySection />
