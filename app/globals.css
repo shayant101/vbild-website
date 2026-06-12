@@ -664,3 +664,117 @@ footer p { color: var(--muted); font-size: 0.78rem; }
 }
 .cursor-ring--hover { width: 58px; height: 58px; border-color: rgba(168,85,247,0.7); background: rgba(99,102,241,0.05); }
 .vertical-card, .pricing-card { position: relative; overflow: hidden; }
+
+
+/* ══════════════════════════════════════════
+   LIGHT THEME — html[data-theme="light"]
+══════════════════════════════════════════ */
+
+/* ── Override core CSS variables ── */
+html[data-theme="light"] {
+  --bg:         #f7f7fc;
+  --bg2:        #eeeef7;
+  --bg3:        #ffffff;
+  --text:       #0f0f1a;
+  --muted:      #6b7280;
+  --muted2:     #374151;
+  --border:     rgba(99,102,241,0.18);
+  --border2:    rgba(0,0,0,0.08);
+  --card:       rgba(255,255,255,0.95);
+  --card-hover: rgba(99,102,241,0.04);
+  --glow:       0 0 40px rgba(99,102,241,0.13);
+  --glow2:      0 0 50px rgba(168,85,247,0.13);
+}
+
+/* ── Scrollbar ── */
+html[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--bg2);
+}
+
+/* ── Nav scrolled background ── */
+html[data-theme="light"] nav.scrolled {
+  background: rgba(247,247,252,0.92);
+  border-bottom-color: rgba(0,0,0,0.08);
+}
+
+/* ── Mobile menu ── */
+html[data-theme="light"] .mobile-menu {
+  background: rgba(255,255,255,0.97);
+  border-bottom-color: rgba(0,0,0,0.08);
+}
+html[data-theme="light"] .mobile-menu a {
+  border-bottom-color: rgba(0,0,0,0.06);
+}
+
+/* ── Hamburger lines ── */
+html[data-theme="light"] .hamburger span {
+  background: var(--text);
+}
+
+/* ── Orbit ring visibility ── */
+html[data-theme="light"] .orbit-ring {
+  border-color: rgba(99,102,241,0.22);
+}
+
+/* ── Orbit nodes ── */
+html[data-theme="light"] .orbit-node {
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+/* ── Portfolio card hover shadow — softer on light ── */
+html[data-theme="light"] .port-card:hover {
+  box-shadow: 0 20px 50px rgba(0,0,0,0.12), var(--glow);
+}
+
+/* ── CTA email input ── */
+html[data-theme="light"] .cta-input {
+  background: rgba(255,255,255,0.9);
+  border-color: rgba(0,0,0,0.12);
+}
+html[data-theme="light"] .cta-input:focus {
+  border-color: var(--indigo);
+  background: #ffffff;
+}
+
+/* ── Pay card ── */
+html[data-theme="light"] .pay-card {
+  background: #ffffff;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.1);
+}
+
+/* ── Pricing card featured ── */
+html[data-theme="light"] .price-card.featured {
+  background: linear-gradient(160deg, rgba(99,102,241,0.05) 0%, rgba(168,85,247,0.03) 100%);
+}
+
+/* ── #new-world-teaser always stays dark — reset vars to dark palette ── */
+html[data-theme="light"] #new-world-teaser {
+  --text:       #f8fafc;
+  --muted:      #64748b;
+  --muted2:     #94a3b8;
+  --border2:    rgba(255,255,255,0.06);
+  --card:       rgba(255,255,255,0.025);
+  --card-hover: rgba(99,102,241,0.07);
+}
+
+/* ── THEME TOGGLE BUTTON ── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: rgba(99,102,241,0.35);
+  background: rgba(99,102,241,0.07);
+}
