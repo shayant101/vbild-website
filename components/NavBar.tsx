@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 const NAV_LINKS = [
   { label: 'Verticals', href: '#verticals' },
@@ -30,7 +31,13 @@ export default function NavBar() {
             </li>
           ))}
         </ul>
-        <a href="#cta" className="nav-cta">Get Started</a>
+        <div className="nav-right">
+          <Link href="/new-world" className="nav-new-world">
+            <span className="nav-nw-dot" />
+            New World
+          </Link>
+          <a href="#cta" className="nav-cta">Get Started</a>
+        </div>
         <button
           className="hamburger"
           aria-label="Toggle menu"
@@ -48,6 +55,9 @@ export default function NavBar() {
             {l.label}
           </a>
         ))}
+        <Link href="/new-world" className="mobile-new-world" onClick={() => setMenuOpen(false)}>
+          ✦ New World
+        </Link>
         <a href="#cta" onClick={() => setMenuOpen(false)}>Get Started</a>
       </div>
     </>
