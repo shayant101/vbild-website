@@ -1,6 +1,12 @@
 'use client'
-
 import { useEffect, useRef } from 'react'
+
+// ── Physics / visual constants ───────────────────────────────────────────────
+const REPEL_R  = 1.55   // world-unit repulsion radius from cursor
+const REPEL_F  = 0.22   // repulsion force multiplier
+const SPRING_K = 0.050  // spring-back constant
+const DAMPING  = 0.87   // per-frame velocity damping
+const PALETTE  = ['#6366f1','#818cf8','#22d3ee','#a78bfa','#06b6d4','#c7d2fe','#4f46e5']
 
 export default function Hero3DObject() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -11,13 +17,13 @@ export default function Hero3DObject() {
 
     import('three').then((THREE) => {
       const container = containerRef.current!
-      const W = container.offsetWidth || 700
-      const H = container.offsetHeight || 700
+      const W = container.offsetWidth  || 560
+      const H = container.offsetHeight || 640
 
-      // ── Scene / Camera / Renderer ──────────────────────────────────
-      const scene = new THREE.Scene()
-      const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 200)
-      camera.position.z = 7.5
+      // ── Scene / Camera / Renderer ────────────────────────────────
+      const scene  = new THREE.Scene()
+      const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100)
+      camera.position.z = 7
 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
       renderer.setSize(W, H)
@@ -25,321 +31,296 @@ export default function Hero3DObject() {
       renderer.setClearColor(0x000000, 0)
       container.appendChild(renderer.domElement)
 
-      // ── Central AI Core (Octahedron — sharp, angular, tech) ───────
-      const coreGeo = new THREE.OctahedronGeometry(0.68, 2)
-      const coreMat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#050514'),
-        emissive: new THREE.Color('#4f46e5'),
-        emissiveIntensity: 1.6,
-        roughness: 0.04,
-        metalness: 1.0,
-      })
-      const core = new THREE.Mesh(coreGeo, coreMat)
-      scene.add(core)
+      // ── Particle data structures ──────────────────────────────────
+      const NS = 350, NB = 120, NR = 80
+      const N  = NS + NB + NR
 
-      // Core edge outline
-      const coreEdges = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(0.69, 2))
-      const coreEdgeMat = new THREE.LineBasicMaterial({
-        color: new THREE.Color('#a5b4fc'),
-        transparent: true,
-        opacity: 1.0,
-      })
-      const coreEdgeLines = new THREE.LineSegments(coreEdges, coreEdgeMat)
-      scene.add(coreEdgeLines)
-
-      // Layered glow halos around core
-      const haloData: [number, string, number][] = [
-        [0.88, '#6366f1', 0.14],
-        [1.10, '#818cf8', 0.07],
-        [1.45, '#a78bfa', 0.03],
-      ]
-      haloData.forEach(([r, col, op]) => {
-        const m = new THREE.MeshBasicMaterial({
-          color: new THREE.Color(col),
-          transparent: true,
-          opacity: op,
-          side: THREE.BackSide,
-        })
-        scene.add(new THREE.Mesh(new THREE.SphereGeometry(r, 32, 32), m))
-      })
-
-      // ── Inner atomic rings orbiting the core ─────────────────────
-      const ringDefs: [number, number, string, number, number][] = [
-        [1.15, 0.012, '#22d3ee', Math.PI / 2,  0],
-        [1.05, 0.010, '#818cf8', Math.PI / 3.5, Math.PI / 4],
-      ]
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const innerRings: any[] = ringDefs.map(([r, tube, col, rx, ry]) => {
-        const m = new THREE.MeshBasicMaterial({
-          color: new THREE.Color(col),
-          transparent: true,
-          opacity: 0.7,
-        })
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(r, tube, 8, 120), m)
-        ring.rotation.set(rx, ry, 0)
-        scene.add(ring)
-        return ring
-      })
-
-      // ── Orbiting App Panels ───────────────────────────────────────
-      type PanelDef = {
-        orbitR: number
-        tiltX: number
-        tiltY: number
-        speed: number
-        phase: number
-        col: string
+      interface Particle {
+        bp:  any   // base (rest) position – THREE.Vector3
+        pos: any   // current position
+        vel: any   // velocity
+        sc:  number          // size scale multiplier
+        tp:  0|1|2           // type: 0=sphere 1=box 2=ring
+        ix:  number          // index within its InstancedMesh
       }
-      const panelDefs: PanelDef[] = [
-        { orbitR: 2.3, tiltX: 0.45, tiltY:  0.15, speed:  0.38, phase: 0,               col: '#22d3ee' },
-        { orbitR: 2.8, tiltX:-0.55, tiltY:  0.60, speed: -0.26, phase: Math.PI * 0.5,   col: '#818cf8' },
-        { orbitR: 2.1, tiltX: 0.70, tiltY: -0.35, speed:  0.52, phase: Math.PI,         col: '#06b6d4' },
-        { orbitR: 3.0, tiltX:-0.25, tiltY: -0.55, speed: -0.32, phase: Math.PI * 1.5,   col: '#a78bfa' },
-      ]
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const panels: any[] = panelDefs.map((def) => {
-        const group = new THREE.Group()
+      const pts: Particle[] = []
+      const col = PALETTE.map(h => new THREE.Color(h))
+      let si = 0, bi = 0, ri = 0
 
-        // Panel body (phone/app screen shape)
-        const bodyGeo = new THREE.BoxGeometry(0.60, 1.0, 0.040)
-        const bodyMat = new THREE.MeshStandardMaterial({
-          color: new THREE.Color('#060618'),
-          emissive: new THREE.Color(def.col),
-          emissiveIntensity: 0.12,
-          transparent: true,
-          opacity: 0.88,
-          roughness: 0.08,
-          metalness: 0.95,
-        })
-        group.add(new THREE.Mesh(bodyGeo, bodyMat))
-
-        // Glowing edge outline
-        const edgeGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(0.615, 1.015, 0.042))
-        const edgeMat = new THREE.LineBasicMaterial({
-          color: new THREE.Color(def.col),
-          transparent: true,
-          opacity: 0.95,
-        })
-        group.add(new THREE.LineSegments(edgeGeo, edgeMat))
-
-        // UI content lines (app screen wireframe)
-        const uiGroup = new THREE.Group()
-        uiGroup.position.z = 0.024
-        const uiMat = new THREE.LineBasicMaterial({
-          color: new THREE.Color(def.col),
-          transparent: true,
-          opacity: 0.28,
-        })
-
-        // Header bar
-        const hdrGeo = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(-0.22, 0.38, 0), new THREE.Vector3(0.22, 0.38, 0),
-        ])
-        uiGroup.add(new THREE.Line(hdrGeo, uiMat))
-
-        // Filled header block
-        const hdrFillMat = new THREE.MeshBasicMaterial({
-          color: new THREE.Color(def.col),
-          transparent: true,
-          opacity: 0.20,
-        })
-        const hdrFill = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.10), hdrFillMat)
-        hdrFill.position.set(0, 0.38, 0)
-        uiGroup.add(hdrFill)
-
-        // Horizontal content lines (different widths = UI rows)
-        const rowWidths = [0.36, 0.28, 0.40, 0.22, 0.34, 0.26, 0.38]
-        rowWidths.forEach((w, i) => {
-          const y = 0.22 - i * 0.10
-          const geo = new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(-w / 2, y, 0),
-            new THREE.Vector3(w / 2, y, 0),
-          ])
-          uiGroup.add(new THREE.Line(geo, uiMat))
-        })
-
-        // Two small "button" blocks at bottom
-        const btnMat = new THREE.MeshBasicMaterial({
-          color: new THREE.Color(def.col),
-          transparent: true,
-          opacity: 0.22,
-        })
-        ;[-0.10, 0.10].forEach((x) => {
-          const btn = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.05), btnMat)
-          btn.position.set(x, -0.38, 0)
-          uiGroup.add(btn)
-        })
-
-        group.add(uiGroup)
-        scene.add(group)
-
-        return { group, def }
-      })
-
-      // ── Data stream beams (core → panels) ────────────────────────
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const beams: any[] = panels.map((p) => {
-        const pts = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0)]
-        const geo = new THREE.BufferGeometry().setFromPoints(pts)
-        const mat = new THREE.LineBasicMaterial({
-          color: new THREE.Color(p.def.col),
-          transparent: true,
-          opacity: 0.30,
-        })
-        const line = new THREE.Line(geo, mat)
-        scene.add(line)
-        return { line, panel: p }
-      })
-
-      // ── Traveling data particles along each beam ──────────────────
-      const BEAM_PTS = 10
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const beamStreams: any[] = panels.map((p, i) => {
-        const arr = new Float32Array(BEAM_PTS * 3)
-        const geo = new THREE.BufferGeometry()
-        geo.setAttribute('position', new THREE.BufferAttribute(arr, 3))
-        const mat = new THREE.PointsMaterial({
-          color: new THREE.Color(p.def.col),
-          size: 0.06,
-          transparent: true,
-          opacity: 0.85,
-        })
-        const pts = new THREE.Points(geo, mat)
-        scene.add(pts)
-        return { pts, arr, panel: p, offset: i * (Math.PI / 2) }
-      })
-
-      // ── Outer particle field ──────────────────────────────────────
-      const COUNT = 650
-      const ppos = new Float32Array(COUNT * 3)
-      for (let i = 0; i < COUNT; i++) {
-        const r = 1.8 + Math.random() * 3.0
-        const theta = Math.random() * Math.PI * 2
-        const phi = Math.acos(2 * Math.random() - 1)
-        ppos[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
-        ppos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
-        ppos[i * 3 + 2] = r * Math.cos(phi)
+      // Uniform distribution inside ellipsoid rx=2.0, ry=2.8, rz=0.9
+      function sample(): any {
+        for (;;) {
+          const x = (Math.random() * 2 - 1) * 2.0
+          const y = (Math.random() * 2 - 1) * 2.8
+          const z = (Math.random() * 2 - 1) * 0.9
+          if (x*x/4 + y*y/7.84 + z*z/0.81 <= 1) return new THREE.Vector3(x, y, z)
+        }
       }
-      const ptGeo = new THREE.BufferGeometry()
-      ptGeo.setAttribute('position', new THREE.BufferAttribute(ppos, 3))
-      const ptMat = new THREE.PointsMaterial({
-        color: new THREE.Color('#c7d2fe'),
-        size: 0.020,
-        transparent: true,
-        opacity: 0.50,
-      })
-      const particles = new THREE.Points(ptGeo, ptMat)
-      scene.add(particles)
 
-      // ── Lights ───────────────────────────────────────────────────
-      scene.add(new THREE.AmbientLight(0xffffff, 0.18))
-      const lightDefs: [string, number, number, [number, number, number]][] = [
-        ['#4f46e5', 7, 20, [ 0,  0, 3.5]],
-        ['#06b6d4', 3, 16, [ 4,  2, 2  ]],
-        ['#8b5cf6', 3, 14, [-3, -3, 1.5]],
-        ['#ffffff', 1, 10, [ 0,  5, 4  ]],
-      ]
-      lightDefs.forEach(([col, intensity, dist, [x, y, z]]) => {
-        const l = new THREE.PointLight(new THREE.Color(col), intensity, dist)
-        l.position.set(x, y, z)
-        scene.add(l)
-      })
-
-      // ── Mouse tracking ────────────────────────────────────────────
-      let mx = 0, my = 0
-      const onMouse = (e: MouseEvent) => {
-        mx = (e.clientX / window.innerWidth  - 0.5) * 2
-        my = -(e.clientY / window.innerHeight - 0.5) * 2
+      for (let i = 0; i < N; i++) {
+        const tp: 0|1|2 = i < NS ? 0 : i < NS+NB ? 1 : 2
+        const bp = sample()
+        pts.push({
+          bp: bp.clone(), pos: bp.clone(), vel: new THREE.Vector3(),
+          sc: 0.50 + Math.random() * 1.75,
+          tp, ix: tp === 0 ? si++ : tp === 1 ? bi++ : ri++,
+        })
       }
-      window.addEventListener('mousemove', onMouse)
 
-      // ── Animate ───────────────────────────────────────────────────
+      // ── InstancedMesh factory ─────────────────────────────────────
+      function mkIM(geo: any, n: number) {
+        const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.82 })
+        const im: any  = new THREE.InstancedMesh(geo, mat, n)
+        im.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+        im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3)
+        scene.add(im)
+        return im
+      }
+
+      const sIM = mkIM(new THREE.SphereGeometry(0.054, 7, 7), NS)
+      const bIM = mkIM(new THREE.BoxGeometry(0.082, 0.082, 0.082), NB)
+      const rIM = mkIM(new THREE.RingGeometry(0.032, 0.064, 6), NR)
+
+      // Assign initial per-instance colors (static – no need to update each frame)
+      pts.forEach(p => {
+        const c  = col[Math.floor(Math.random() * col.length)]
+        const im = p.tp === 0 ? sIM : p.tp === 1 ? bIM : rIM
+        im.setColorAt(p.ix, c)
+      })
+      ;[sIM, bIM, rIM].forEach((m: any) => { m.instanceColor.needsUpdate = true })
+
+      // ── Bloom app-card builder ────────────────────────────────────
+      // Each card is a Three.js Group that blooms from a particle.
+      function mkCard(accent: string, layout: 'dash'|'form'): any {
+        const g  = new THREE.Group()
+        g.scale.setScalar(0)
+        const ac = new THREE.Color(accent)
+        const CW = 0.80, CH = 1.28  // card width/height in world units
+
+        // Glass body
+        const body = new THREE.Mesh(
+          new THREE.BoxGeometry(CW, CH, 0.05),
+          new THREE.MeshBasicMaterial({ color: 0x040410, transparent: true, opacity: 0.94 })
+        )
+        g.add(body)
+
+        // Glowing edge frame
+        const edge = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.BoxGeometry(CW+0.01, CH+0.01, 0.052)),
+          new THREE.LineBasicMaterial({ color: ac, transparent: true, opacity: 0.90 })
+        )
+        g.add(edge)
+
+        // Header strip
+        const hdr = new THREE.Mesh(
+          new THREE.PlaneGeometry(CW - 0.18, 0.11),
+          new THREE.MeshBasicMaterial({ color: ac, transparent: true, opacity: 0.22 })
+        )
+        hdr.position.set(0, CH/2 - 0.12, 0.027)
+        g.add(hdr)
+
+        const lm = new THREE.LineBasicMaterial({ color: ac, transparent: true, opacity: 0.28 })
+
+        if (layout === 'dash') {
+          // Dashboard: metric tiles + data rows + bar chart
+          const tileMat = new THREE.MeshBasicMaterial({ color: ac, transparent: true, opacity: 0.10 })
+
+          for (let i = 0; i < 2; i++) {
+            const tile = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, 0.01), tileMat)
+            tile.position.set(-0.18 + i * 0.37, CH/2 - 0.35, 0.027)
+            g.add(tile)
+            const tileEdge = new THREE.LineSegments(
+              new THREE.EdgesGeometry(new THREE.BoxGeometry(0.29, 0.19, 0.01)),
+              new THREE.LineBasicMaterial({ color: ac, transparent: true, opacity: 0.30 })
+            )
+            tileEdge.position.copy(tile.position)
+            g.add(tileEdge)
+          }
+
+          ;[0.52, 0.40, 0.48, 0.30, 0.45, 0.25, 0.42].forEach((w, i) => {
+            const lineGeo = new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(-w/2, 0.14 - i * 0.105, 0.027),
+              new THREE.Vector3( w/2, 0.14 - i * 0.105, 0.027),
+            ])
+            g.add(new THREE.Line(lineGeo, lm))
+          })
+
+          const bm = new THREE.MeshBasicMaterial({ color: ac, transparent: true, opacity: 0.22 })
+          ;[0.35, 0.60, 0.50, 0.78, 0.62, 0.88].forEach((h, i) => {
+            const bar = new THREE.Mesh(new THREE.PlaneGeometry(0.056, h * 0.24), bm)
+            bar.position.set(-0.28 + i * 0.112, -CH/2 + 0.14 + h * 0.12, 0.027)
+            g.add(bar)
+          })
+
+        } else {
+          // Form layout: labeled field rows + submit button
+          const fieldMat  = new THREE.MeshBasicMaterial({ color: ac, transparent: true, opacity: 0.08 })
+          const fieldEdge = new THREE.LineBasicMaterial({ color: ac, transparent: true, opacity: 0.22 })
+
+          ;[0.40, 0.26, 0.40, 0.26, 0.36, 0.18].forEach((w, i) => {
+            const y = 0.44 - i * 0.155
+
+            // Label stub
+            const labelGeo = new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(-CW/2 + 0.06, y + 0.04, 0.027),
+              new THREE.Vector3(-CW/2 + 0.06 + w * 0.52, y + 0.04, 0.027),
+            ])
+            g.add(new THREE.Line(labelGeo, lm))
+
+            if (i % 2 === 0) {
+              const field = new THREE.Mesh(new THREE.PlaneGeometry(CW - 0.14, 0.075), fieldMat)
+              field.position.set(0, y - 0.02, 0.027)
+              g.add(field)
+              const fe = new THREE.LineSegments(
+                new THREE.EdgesGeometry(new THREE.BoxGeometry(CW - 0.13, 0.076, 0.001)),
+                fieldEdge
+              )
+              fe.position.copy(field.position)
+              g.add(fe)
+            }
+          })
+
+          // Submit button
+          const btn = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.45, 0.075),
+            new THREE.MeshBasicMaterial({ color: ac, transparent: true, opacity: 0.28 })
+          )
+          btn.position.set(0, -CH/2 + 0.14, 0.027)
+          g.add(btn)
+        }
+
+        scene.add(g)
+        return g
+      }
+
+      // Three cards cycling through 2 layouts × 3 accent colors
+      const cards: any[] = [
+        mkCard('#22d3ee', 'dash'),
+        mkCard('#818cf8', 'form'),
+        mkCard('#a78bfa', 'dash'),
+      ]
+      let cardI = 0, focusScale = 0, focusTarget = 0
+      const focusPos = new THREE.Vector3()
+      let cardCycleT = 0
+
+      // ── Mouse tracking ─────────────────────────────────────────────
+      // Global listener: canvas stays pointer-events:none, no click interception
+      const m2d = new THREE.Vector2(-99, -99)
+      const m3d = new THREE.Vector3()
+      const rc  = new THREE.Raycaster()
+      const zpl = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
+
+      const onMouseMove = (e: MouseEvent) => {
+        const r = container.getBoundingClientRect()
+        m2d.set(
+          ((e.clientX - r.left) / W) * 2 - 1,
+          -((e.clientY - r.top)  / H) * 2 + 1
+        )
+      }
+      window.addEventListener('mousemove', onMouseMove)
+
+      // ── Animation loop ────────────────────────────────────────────
       let raf: number
-      const clock = new THREE.Clock()
+      const clk = new THREE.Clock()
+      const dum = new THREE.Object3D()
 
       const animate = () => {
         raf = requestAnimationFrame(animate)
-        const t = clock.getElapsedTime()
+        const t = clk.getElapsedTime()
 
-        // Core pulse + spin
-        const pulse = 1 + Math.sin(t * 2.2) * 0.05
-        core.scale.setScalar(pulse)
-        coreEdgeLines.scale.setScalar(pulse)
-        coreMat.emissiveIntensity = 1.3 + Math.sin(t * 2.2) * 0.5
+        // Unproject mouse to z=0 world plane
+        rc.setFromCamera(m2d, camera)
+        rc.ray.intersectPlane(zpl, m3d)
 
-        core.rotation.y = t * 0.55
-        core.rotation.x = t * 0.30
-        coreEdgeLines.rotation.copy(core.rotation)
+        // ── Focus particle ─────────────────────────────────────────
+        // The particle in focus is the one closest to the cursor
+        // that sits JUST OUTSIDE the repulsion ring — it hasn't
+        // scattered yet, about to be "picked up" by the cursor.
+        let focI = -1, focD = Infinity
+        const inCloud = m3d.length() < 3.8
 
-        // Inner rings spin
-        innerRings[0].rotation.z = t * 0.9
-        innerRings[1].rotation.z = -t * 0.7
-
-        // Orbit panels in tilted planes
-        panels.forEach((p) => {
-          const angle = t * p.def.speed + p.def.phase
-          const r = p.def.orbitR
-
-          // Circle in XZ, then tilt
-          const x0 = r * Math.cos(angle)
-          const z0 = r * Math.sin(angle)
-
-          // Tilt around X
-          const cosTx = Math.cos(p.def.tiltX)
-          const sinTx = Math.sin(p.def.tiltX)
-          const y1 = z0 * sinTx
-          const z1 = z0 * cosTx
-
-          // Tilt around Y
-          const cosTy = Math.cos(p.def.tiltY)
-          const sinTy = Math.sin(p.def.tiltY)
-          const x2 = x0 * cosTy + z1 * sinTy
-          const z2 = -x0 * sinTy + z1 * cosTy
-
-          p.group.position.set(x2, y1, z2)
-
-          // Face camera + gentle float
-          p.group.lookAt(camera.position)
-          p.group.position.y += Math.sin(t * 0.9 + p.def.phase) * 0.06
-        })
-
-        // Update beam lines
-        beams.forEach((b) => {
-          const pp = b.panel.group.position
-          const arr = b.line.geometry.attributes.position.array as Float32Array
-          arr[0] = 0; arr[1] = 0; arr[2] = 0
-          arr[3] = pp.x; arr[4] = pp.y; arr[5] = pp.z
-          b.line.geometry.attributes.position.needsUpdate = true
-        })
-
-        // Animate traveling particles along beams
-        beamStreams.forEach((bs) => {
-          const pp = bs.panel.group.position
-          for (let i = 0; i < BEAM_PTS; i++) {
-            const frac = ((i / BEAM_PTS + t * 0.65 + bs.offset) % 1.0)
-            // Slight arc via sine offset
-            const arc = Math.sin(frac * Math.PI) * 0.25
-            bs.arr[i * 3]     = pp.x * frac
-            bs.arr[i * 3 + 1] = pp.y * frac + arc
-            bs.arr[i * 3 + 2] = pp.z * frac
+        pts.forEach((p, i) => {
+          const d = p.pos.distanceTo(m3d)
+          if (inCloud && d > REPEL_R * 0.80 && d < REPEL_R * 2.10 && d < focD) {
+            focD = d; focI = i
           }
-          bs.pts.geometry.attributes.position.needsUpdate = true
         })
 
-        // Particle field slow drift
-        particles.rotation.y = t * 0.025
-        particles.rotation.x = t * 0.012
+        if (focI >= 0) {
+          focusTarget = 1
+          focusPos.lerp(pts[focI].pos, 0.12)
+          if (t - cardCycleT > 2.8) { cardI = (cardI + 1) % 3; cardCycleT = t }
+        } else {
+          focusTarget = 0
+        }
+        focusScale += (focusTarget - focusScale) * 0.09
 
-        // Mouse parallax
-        scene.rotation.y += (mx * 0.42 - scene.rotation.y) * 0.045
-        scene.rotation.x += (my * 0.25 - scene.rotation.x) * 0.045
+        cards.forEach((c: any, i: number) => {
+          if (i === cardI) {
+            c.position.lerp(focusPos, 0.10)
+            c.scale.setScalar(focusScale * 1.55)
+          } else {
+            c.scale.multiplyScalar(0.88)
+          }
+          c.rotation.y = Math.sin(t * 0.40 + i) * 0.12
+        })
+
+        // ── Particle physics ───────────────────────────────────────
+        pts.forEach(p => {
+          const dx = p.pos.x - m3d.x
+          const dy = p.pos.y - m3d.y
+          const dz = p.pos.z - m3d.z
+          const dist = Math.sqrt(dx*dx + dy*dy + dz*dz)
+
+          if (dist < REPEL_R && dist > 0.001) {
+            const f = ((1 - dist / REPEL_R) * REPEL_F) / dist
+            p.vel.x += dx * f
+            p.vel.y += dy * f
+            p.vel.z += dz * f
+          }
+
+          p.vel.x += (p.bp.x - p.pos.x) * SPRING_K
+          p.vel.y += (p.bp.y - p.pos.y) * SPRING_K
+          p.vel.z += (p.bp.z - p.pos.z) * SPRING_K
+
+          // Organic micro-drift
+          p.vel.x += Math.sin(t * 0.28 + p.bp.y * 3.1) * 0.00045
+          p.vel.y += Math.cos(t * 0.22 + p.bp.x * 2.7) * 0.00045
+
+          p.vel.x *= DAMPING; p.vel.y *= DAMPING; p.vel.z *= DAMPING
+          p.pos.x += p.vel.x; p.pos.y += p.vel.y; p.pos.z += p.vel.z
+
+          dum.position.set(p.pos.x, p.pos.y, p.pos.z)
+          dum.scale.setScalar(p.sc)
+          if (p.tp === 1) {
+            dum.rotation.x = t * 0.25 + p.bp.x * 1.4
+            dum.rotation.y = t * 0.34 + p.bp.y * 1.2
+            dum.rotation.z = 0
+          } else if (p.tp === 2) {
+            dum.rotation.x = Math.PI / 2
+            dum.rotation.y = 0
+            dum.rotation.z = t * 0.50 + p.bp.x * 1.6
+          } else {
+            dum.rotation.set(0, 0, 0)
+          }
+          dum.updateMatrix()
+          ;(p.tp === 0 ? sIM : p.tp === 1 ? bIM : rIM).setMatrixAt(p.ix, dum.matrix)
+        })
+
+        sIM.instanceMatrix.needsUpdate = true
+        bIM.instanceMatrix.needsUpdate = true
+        rIM.instanceMatrix.needsUpdate = true
+
+        // Idle scene drift
+        scene.rotation.y = Math.sin(t * 0.13) * 0.07
+        scene.rotation.x = Math.sin(t * 0.10) * 0.03
 
         renderer.render(scene, camera)
       }
+
       animate()
 
-      // ── Resize ───────────────────────────────────────────────────
       const onResize = () => {
         if (!containerRef.current) return
         const w = containerRef.current.offsetWidth
@@ -352,12 +333,11 @@ export default function Hero3DObject() {
 
       cleanup = () => {
         cancelAnimationFrame(raf)
-        window.removeEventListener('mousemove', onMouse)
+        window.removeEventListener('mousemove', onMouseMove)
         window.removeEventListener('resize', onResize)
         renderer.dispose()
-        if (containerRef.current?.contains(renderer.domElement)) {
+        if (containerRef.current?.contains(renderer.domElement))
           containerRef.current.removeChild(renderer.domElement)
-        }
       }
     })
 

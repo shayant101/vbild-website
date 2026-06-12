@@ -181,21 +181,22 @@ nav.scrolled {
 .stat-divider { width: 1px; background: var(--border2); height: 40px; align-self: center; }
 
 /* ── HERO 3D ── */
+/* Canvas is pointer-events:none; mouse is tracked via global window listener */
 .hero-3d-wrap {
   position: absolute;
-  right: -4%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 700px;
-  height: 700px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 48%;          /* right half only — never enters text column */
   pointer-events: none;
   z-index: 1;
+  overflow: hidden;
 }
 @media (max-width: 1400px) {
-  .hero-3d-wrap { width: 600px; height: 600px; right: -2%; }
+  .hero-3d-wrap { width: 46%; }
 }
 @media (max-width: 1200px) {
-  .hero-3d-wrap { width: 480px; height: 480px; right: 0%; }
+  .hero-3d-wrap { width: 44%; }
 }
 @media (max-width: 960px) {
   .hero-3d-wrap { display: none; }
