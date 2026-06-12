@@ -9,11 +9,12 @@ const SPRING_K = 0.045
 const DAMPING  = 0.88
 
 // ── Phase 2 — focus / hover constants ────────────────────────────────────────
-const FOCUS_SCALE = 1.40   // node scale multiplier when focused
-const FOCUS_Z     = 0.28   // z push toward camera on focus
-const FOCUS_R     = 0.65   // parting-cloud repulsion radius around focused node
-const FOCUS_F     = 0.09   // parting-cloud repulsion force
-const STICKY_R    = 0.45   // hold-focus world-unit radius — prevents flicker
+const FOCUS_SCALE  = 1.80   // node scale multiplier when focused
+const FOCUS_Z_ABS  = 0.95   // absolute z target when focused
+const FOCUS_CENTER = 0.55   // xy pull toward canvas center on focus
+const FOCUS_R      = 0.42   // parting-cloud repulsion radius around focused node
+const FOCUS_F      = 0.10   // parting-cloud repulsion force (scaled by focusAmt)
+const STICKY_R     = 0.45   // hold-focus world-unit radius — prevents flicker
 
 // Deep-space indigo / violet — monochromatic
 const PALETTE = [
@@ -79,6 +80,16 @@ export default function Hero3DObject() {
       renderer.setClearColor(0x000000, 0)
       container.appendChild(renderer.domElement)
 
+      // ── Scene lights ──────────────────────────────────────────────────
+      const ambientLight = new THREE.AmbientLight(0xa5b4fc, 0.75)
+      scene.add(ambientLight)
+      const dirLight = new THREE.DirectionalLight(0xc4b5fd, 1.1)
+      dirLight.position.set(2, 3, 4)
+      scene.add(dirLight)
+      const ptLight = new THREE.PointLight(0x6366f1, 14, 12)
+      ptLight.position.set(-2, -1, 2.5)
+      scene.add(ptLight)
+
       // ── Particles ─────────────────────────────────────────────────────
       const NS = isMobile ? 600 : 1100, NB = isMobile ? 450 : 800, NR = isMobile ? 250 : 500
       const N  = NS + NB + NR
@@ -112,7 +123,7 @@ export default function Hero3DObject() {
       }
 
       function mkIM(geo: any, n: number) {
-        const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.80 })
+        const mat = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.80, roughness: 0.45, metalness: 0.35 })
         const im: any = new THREE.InstancedMesh(geo, mat, n)
         im.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
         im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3)
@@ -123,6 +134,7 @@ export default function Hero3DObject() {
       const sIM = mkIM(new THREE.SphereGeometry(0.010, 5, 4), NS)
       const bIM = mkIM(new THREE.BoxGeometry(0.013, 0.013, 0.013), NB)
       const rIM = mkIM(new THREE.RingGeometry(0.007, 0.013, 6), NR)
+      rIM.material.side = THREE.DoubleSide
 
       pts.forEach(p => {
         const c  = col[Math.floor(Math.random() * col.length)]
@@ -142,8 +154,8 @@ export default function Hero3DObject() {
         const gg = Math.round(c3.g * 255)
         const bb = Math.round(c3.b * 255)
         const gr = cx.createRadialGradient(sz/2, sz/2, 0, sz/2, sz/2, sz/2)
-        gr.addColorStop(0,    `rgba(${rr},${gg},${bb},1)`)
-        gr.addColorStop(0.25, `rgba(${rr},${gg},${bb},0.4)`)
+        gr.addColorStop(0,    `rgba(${rr},${gg},${bb},0.55)`)
+        gr.addColorStop(0.40, `rgba(${rr},${gg},${bb},0.18)`)
         gr.addColorStop(1,    `rgba(${rr},${gg},${bb},0)`)
         cx.fillStyle = gr
         cx.fillRect(0, 0, sz, sz)
@@ -165,8 +177,7 @@ export default function Hero3DObject() {
       interface NodeObj {
         bx: number; by: number; bz: number
         solid: any; wire: any; glow: any; hit: any
-        fl:  number
-        fz:  number
+        fl: number
       }
 
       const nodeObjs: NodeObj[] = NODE_DATA.map(nd => {
@@ -174,16 +185,25 @@ export default function Hero3DObject() {
 
         const solid: any = new THREE.Mesh(
           geo,
-          new THREE.MeshBasicMaterial({ color: new THREE.Color(nd.color), transparent: true, opacity: 0.90 })
+          new THREE.MeshStandardMaterial({
+            color: new THREE.Color(nd.color),
+            emissive: new THREE.Color(0x4338ca),
+            emissiveIntensity: 0.4,
+            roughness: 0.3,
+            metalness: 0.55,
+            transparent: true,
+            opacity: 0.90,
+          })
         )
         solid.position.set(nd.x, nd.y, nd.z)
         scene.add(solid)
 
-        const wire: any = new THREE.LineSegments(
-          new THREE.EdgesGeometry(geo),
-          new THREE.LineBasicMaterial({ color: new THREE.Color(nd.color), transparent: true, opacity: 0.40 })
+        const wire: any = new THREE.Mesh(
+          geo,
+          new THREE.MeshBasicMaterial({ color: 0xa78bfa, wireframe: true, transparent: true, opacity: 0.30 })
         )
         wire.position.copy(solid.position)
+        wire.scale.setScalar(1.28)
         scene.add(wire)
 
         const glow: any = new THREE.Sprite(
@@ -197,14 +217,14 @@ export default function Hero3DObject() {
           })
         )
         glow.position.copy(solid.position)
-        glow.scale.setScalar(0.52)
+        glow.scale.setScalar(0.55)
         scene.add(glow)
 
         const hit: any = new THREE.Mesh(hitGeo, hitMat)
         hit.position.set(nd.x, nd.y, nd.z)
         scene.add(hit)
 
-        return { bx: nd.x, by: nd.y, bz: nd.z, solid, wire, glow, hit, fl: 0, fz: nd.z }
+        return { bx: nd.x, by: nd.y, bz: nd.z, solid, wire, glow, hit, fl: 0 }
       })
 
       const hitMeshes = nodeObjs.map(n => n.hit)
@@ -338,7 +358,7 @@ export default function Hero3DObject() {
             const fdz  = p.pos.z - fn.solid.position.z
             const fdst = Math.sqrt(fdx*fdx + fdy*fdy + fdz*fdz)
             if (fdst < FOCUS_R && fdst > 0.001) {
-              const ff = ((1 - fdst / FOCUS_R) * FOCUS_F) / fdst
+              const ff = ((1 - fdst / FOCUS_R) * FOCUS_F * fn.fl) / fdst
               p.vel.x += fdx * ff; p.vel.y += fdy * ff; p.vel.z += fdz * ff
             }
           }
@@ -380,27 +400,36 @@ export default function Hero3DObject() {
           const idlePulse = 1 + Math.sin(t * 0.72 + ph) * 0.07
           const isFocused = i === focusedNode
 
-          nd.fl += ((isFocused ? 1 : 0) - nd.fl) * 0.08
-          nd.fz += ((nd.bz + (isFocused ? FOCUS_Z : 0)) - nd.fz) * 0.08
+          // Single focusAmt scalar — asymmetric lerp rates (prototype values)
+          nd.fl += ((isFocused ? 1 : 0) - nd.fl) * (isFocused ? 0.07 : 0.05)
+
+          // Derive all focus positions from nd.fl
+          const fx = nd.bx * (1 - nd.fl * FOCUS_CENTER)
+          const fy = nd.by * (1 - nd.fl * FOCUS_CENTER)
+          const fz = nd.bz + nd.fl * (FOCUS_Z_ABS - nd.bz)
 
           const scaleMult = 1 + nd.fl * (FOCUS_SCALE - 1)
-          const py = nd.by + bob
+          const py = fy + bob
 
-          nd.solid.position.set(nd.bx, py, nd.fz)
+          nd.solid.position.set(fx, py, fz)
           nd.solid.rotation.y = t * 0.28 + ph
           nd.solid.rotation.x = t * 0.17 + ph * 0.6
           nd.solid.scale.setScalar(idlePulse * scaleMult)
+          nd.solid.material.emissiveIntensity = 0.4 + nd.fl * 0.5
 
           nd.wire.position.copy(nd.solid.position)
           nd.wire.rotation.copy(nd.solid.rotation)
-          nd.wire.scale.copy(nd.solid.scale)
+          nd.wire.scale.setScalar(1.28 * idlePulse * scaleMult)
+
+          nd.hit.position.copy(nd.solid.position)
 
           nd.glow.position.copy(nd.solid.position)
-          nd.glow.scale.setScalar(0.52 * idlePulse * scaleMult * (1 + nd.fl * 0.5))
+          nd.glow.scale.setScalar(0.55 * idlePulse * scaleMult * (1 + nd.fl * 0.5))
 
-          const tSolid = !anyFocused ? 0.90 : isFocused ? 0.96 : 0.18
-          const tWire  = !anyFocused ? 0.40 : isFocused ? 0.80 : 0.05
-          const tGlow  = !anyFocused ? 0.55 : isFocused ? 0.90 : 0.04
+          const tSolid  = !anyFocused ? 0.90 : isFocused ? 0.96 : 0.18
+          const tWire   = !anyFocused ? 0.30 : isFocused ? 0.80 : 0.05
+          const baseGlow = 0.4 + 0.15 * Math.sin(t * 1.4 + ph) + nd.fl * 0.25
+          const tGlow   = anyFocused && !isFocused ? 0.04 : baseGlow
 
           nd.solid.material.opacity += (tSolid - nd.solid.material.opacity) * 0.06
           nd.wire.material.opacity  += (tWire  - nd.wire.material.opacity)  * 0.06
