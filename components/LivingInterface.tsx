@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import Link from 'next/link'
 
 /* ─── types ───────────────────────────────────────────────────── */
 type Rect = [number, number, number, number] // [left%, top%, width%, height%]
@@ -106,7 +107,7 @@ function cellsHTML(data: [string, string][], cols: number, filled: number[] = []
 function payLinesHTML(data: [string, string][]) {
   return data.map(([a, b]) => `<div class="li-pay-line"><span>${a}</span><b>${b}</b></div>`).join('')
 }
-function navHTML(items: string[], _dir: string) {
+function navHTML(items: string[]) {
   return items.map((x, i) =>
     `<div class="li-nav-item ${i === 0 ? 'on' : ''}"><span class="li-nd"></span>${x}</div>`
   ).join('')
@@ -122,9 +123,9 @@ function qrHTML() {
 
 const CONTENT: Record<CompId, Record<string, () => string>> = {
   nav: {
-    sidebar: () => navHTML(['Dashboard', 'Guests', 'Payments', 'Reports'], 'col'),
-    topbar:  () => navHTML(['Floor', 'Reservations', 'Inventory', 'Digest'], 'row'),
-    tabs:    () => navHTML(['Sell', 'Stock', 'Loyalty', 'Reports'], 'row'),
+    sidebar: () => navHTML(['Dashboard', 'Guests', 'Payments', 'Reports']),
+    topbar:  () => navHTML(['Floor', 'Reservations', 'Inventory', 'Digest']),
+    tabs:    () => navHTML(['Sell', 'Stock', 'Loyalty', 'Reports']),
   },
   list: {
     rows:     () => rowsHTML([['Harlan family','6 guests','ok','Checked in'],['Reyes party','4 guests','','Paid'],['Bo Whitfield Jr.','2 guests','ok','Checked in'],['Cassidy group','8 guests','warn','Waiver due'],['Tran wedding block','12 guests','','Paid']]),
@@ -135,7 +136,7 @@ const CONTENT: Record<CompId, Record<string, () => string>> = {
   calendar: {
     strip: () => cellsHTML([['Gate open','9:00a'],['Check-in','10:00a'],['Lunch ride','12:30p'],['Bonfire','6:00p']], 4, [1]),
     mini:  () => cellsHTML([['Mon','64'],['Tue','71'],['Wed','58'],['Thu','92'],['Fri','128'],['Sat','141']], 3, [4, 5]),
-    slots: () => cellsHTML([['S1 · 10a','booked'],['S1 · 1p','open'],['S1 · 4p','booked'],['S2 · 10a','booked'],['S2 · 1p','booked'],['S2 · 4p','open'],['Stage · 10a','open'],['Stage · 1p','hold'],['Stage · 4p','booked']], 3, [0, 2, 3, 4, 8]),
+    slots: () => cellsHTML([['S1 · 10a','booked'],['S1 · 1p','open'],['S1 · 4p','booked'],['S2 · 10a','booked'],['S2 · 1p','booked'],['S2 · 4p','open'],['Stage · 10a','open'],['Stage · 1p','open'],['Stage · 4p','booked']], 3, [0, 2, 3, 4, 8]),
   },
   payment: {
     paycard:  () => payLinesHTML([['Collected today','$4,820'],['Pending','$1,140']]) + '<div class="li-pay-btn">Collect group payment →</div>',
@@ -431,7 +432,7 @@ export default function LivingInterface() {
 
       <div className="li-page">
 
-        <a href="/" className="li-back">← Back to home</a>
+        <Link href="/" className="li-back">← Back to home</Link>
 
         <div className="li-kicker">The New World · Dynamic Software Interfaces</div>
 
@@ -455,7 +456,7 @@ export default function LivingInterface() {
             <div className="li-old-frame">
               <div className="li-old-bar">
                 <i></i><i></i><i></i>
-                <span>GenericBiz Pro&#xa9; — same for every customer</span>
+                <span>GenericBiz Pro™ — same for every customer</span>
               </div>
               <div className="li-old-body">
                 <div className="li-old-row"></div>
@@ -463,7 +464,7 @@ export default function LivingInterface() {
                 <div className="li-old-grid">
                   <div className="li-old-cell"></div>
                   <div className="li-old-cell"></div>
-                  <div className="li-olell"></div>
+                  <div className="li-old-cell"></div>
                   <div className="li-old-cell"></div>
                 </div>
               </div>
@@ -523,7 +524,7 @@ export default function LivingInterface() {
         <div className="li-manifesto">
           <p>
             <b>For thirty years, small businesses got the leftovers.</b> Software was expensive to
-  2         build, so it was built once, for the average customer — and the ranch, the smoke shop,
+            build, so it was built once, for the average customer — and the ranch, the smoke shop,
             and the taqueria all squeezed into the same grey dashboard built for none of them.
           </p>
           <p>
