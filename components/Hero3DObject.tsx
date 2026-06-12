@@ -221,16 +221,26 @@ export default function Hero3DObject() {
           ((e.clientX - r.left) / r.width)  *  2 - 1,
           -((e.clientY - r.top) / r.height) *  2 + 1,
         )
+        if (!mouseOverCard) {
+          lastPointerActivity = performance.now()
+          attractMode = false
+        }
       }
       window.addEventListener('mousemove', onMouseMove)
 
       // ── Phase 3: pointer-over-card guard ──────────────────────────────
-      // When mouse enters the HTML card, freeze focusedNode so it can't be cleared
       let mouseOverCard = false
       const onCardEnter = () => { mouseOverCard = true }
-      const onCardLeave = () => { mouseOverCard = false }
+      const onCardLeave = () => { mouseOverCard = false; lastPointerActivity = performance.now() }
       cardEl?.addEventListener('mouseenter', onCardEnter)
       cardEl?.addEventListener('mouseleave', onCardLeave)
+
+      // ── Phase 4: attract mode state ───────────────────────────────────
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      let lastPointerActivity = performance.now()
+      let attractMode  = false
+      let attractIndex = 0
+      let attractTimer = 0
 
       // ── Focus state ───────────────────────────────────────────────────
       let focusedNode = -1
@@ -252,8 +262,23 @@ export default function Hero3DObject() {
         rc.ray.intersectPlane(zpl, m3dRaw)
         m3d.lerp(m3dRaw, 0.08)
 
-        // ── Node hover detection (skipped when mouse is over card) ────────
-        if (!mouseOverCard) {
+        // ── Phase 4: attract mode ─────────────────────────────────────────
+        const now = performance.now()
+        if (!prefersReducedMotion && !mouseOverCard && !attractMode) {
+          if (now - lastPointerActivity > 6000) {
+            attractMode  = true
+            attractIndex = 0
+            attractTimer = now
+          }
+        }
+        if (attractMode) {
+          focusedNode = attractIndex
+          if (now - attractTimer > 3500) {
+            attractIndex = (attractIndex + 1) % NODE_DATA.length
+            attractTimer = now
+          }
+        } else if (!mouseOverCard) {
+          // ── Node hover detection ─────────────────────────────────────
           const hits = rc.intersectObjects(hitMeshes, false)
           if (hits.length > 0) {
             focusedNode = hitMeshes.indexOf(hits[0].object)
