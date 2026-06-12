@@ -47,6 +47,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <head>
+        {/* Flash-of-wrong-theme prevention: runs synchronously before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('vbild-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body>
         {/* Cursor dot + ring + spotlight — client-only via CursorLoader wrapper */}
         <CursorLoader />
