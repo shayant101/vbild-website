@@ -285,7 +285,33 @@ export default function LivingInterface() {
   return (
     <>
       <style>{`
-        :root { --li-accent: #6366f1; }
+        :root {
+          --li-accent: #6366f1;
+          --li-frame-bg:    #070a14;
+          --li-comp-bg:     rgba(13,16,30,0.92);
+          --li-titlebar-bg: rgba(8,10,20,0.85);
+          --li-comp-text:   #f8fafc;
+          --li-old-frame-bg:#0b0d12;
+          --li-old-row-bg:  #161a22;
+          --li-old-cell-bg: #12151c;
+          --li-input-bg:    rgba(99,102,241,0.06);
+          --li-input-text:  #f8fafc;
+          --li-qr-dot:      #c7d2fe;
+          --li-old-bar-dot: #374151;
+        }
+        html[data-theme="light"] {
+          --li-frame-bg:    #eaeaf5;
+          --li-comp-bg:     rgba(255,255,255,0.98);
+          --li-titlebar-bg: rgba(234,234,245,0.96);
+          --li-comp-text:   #0f0f1a;
+          --li-old-frame-bg:#d0d2df;
+          --li-old-row-bg:  #b8bac8;
+          --li-old-cell-bg: #c2c4d2;
+          --li-input-bg:    rgba(255,255,255,0.9);
+          --li-input-text:  #0f0f1a;
+          --li-qr-dot:      #6366f1;
+          --li-old-bar-dot: #9ca3af;
+        }
         .li-page { max-width: 1180px; margin: 0 auto; padding: 120px 24px 120px; }
 
         /* kicker */
@@ -307,15 +333,15 @@ export default function LivingInterface() {
         .li-new-col .dot { background: #a78bfa; box-shadow: 0 0 10px rgba(167,139,250,0.9); }
 
         /* old world */
-        .li-old-frame { border: 1px solid rgba(107,114,128,0.25); border-radius: 14px; background: #0b0d12; height: 100%; min-height: 380px; filter: grayscale(1); opacity: 0.75; display: flex; flex-direction: column; overflow: hidden; }
+        .li-old-frame { border: 1px solid rgba(107,114,128,0.25); border-radius: 14px; background: var(--li-old-frame-bg); height: 100%; min-height: 380px; filter: grayscale(1); opacity: 0.75; display: flex; flex-direction: column; overflow: hidden; }
         .li-old-bar { height: 30px; border-bottom: 1px solid rgba(107,114,128,0.2); display: flex; align-items: center; gap: 5px; padding: 0 10px; }
-        .li-old-bar i { width: 8px; height: 8px; border-radius: 50%; background: #374151; }
+        .li-old-bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--li-old-bar-dot); }
         .li-old-bar span { font-size: 0.62rem; color: #6b7280; margin-left: 6px; }
         .li-old-body { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-        .li-old-row { height: 22px; background: #161a22; border-radius: 5px; }
+        .li-old-row { height: 22px; background: var(--li-old-row-bg); border-radius: 5px; }
         .li-old-row.short { width: 55%; }
         .li-old-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .li-old-cell { background: #12151c; border-radius: 7px; border: 1px solid rgba(107,114,128,0.12); }
+        .li-old-cell { background: var(--li-old-cell-bg); border-radius: 7px; border: 1px solid rgba(107,114,128,0.12); }
         .li-old-note { font-size: 0.74rem; color: #6b7280; text-align: center; padding: 12px 18px 16px; line-height: 1.5; }
         .li-old-note b { color: #9ca3af; font-weight: 600; }
 
@@ -327,8 +353,8 @@ export default function LivingInterface() {
         .li-chip .prog { position: absolute; left: 0; bottom: 0; height: 2px; width: 0%; background: var(--li-accent); transition: none; }
 
         /* frame */
-        .li-frame { position: relative; border-radius: 16px; overflow: hidden; background: #070a14; border: 1px solid rgba(99,102,241,0.3); box-shadow: 0 20px 70px rgba(3,7,18,0.7), 0 0 0 1px rgba(167,139,250,0.06), 0 0 60px rgba(99,102,241,0.10); aspect-ratio: 16 / 10.4; }
-        .li-titlebar { position: absolute; top: 0; left: 0; right: 0; height: 5.5%; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: 1px solid rgba(99,102,241,0.16); background: rgba(8,10,20,0.85); z-index: 30; }
+        .li-frame { position: relative; border-radius: 16px; overflow: hidden; background: var(--li-frame-bg); border: 1px solid rgba(99,102,241,0.3); box-shadow: 0 20px 70px rgba(3,7,18,0.7), 0 0 0 1px rgba(167,139,250,0.06), 0 0 60px rgba(99,102,241,0.10); aspect-ratio: 16 / 10.4; }
+        .li-titlebar { position: absolute; top: 0; left: 0; right: 0; height: 5.5%; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: 1px solid rgba(99,102,241,0.16); background: var(--li-titlebar-bg); z-index: 30; }
         .li-titlebar i { width: 9px; height: 9px; border-radius: 50%; background: #1f2435; }
         .li-titlebar i:first-child { background: rgba(99,102,241,0.55); }
         .li-app-name { font-family: var(--font-space, sans-serif); font-size: 0.72rem; color: #9ca3af; margin-left: 8px; transition: opacity .22s; }
@@ -336,11 +362,11 @@ export default function LivingInterface() {
         .li-stage { position: absolute; inset: 5.5% 0 0 0; }
 
         /* morphing panels */
-        .li-comp { position: absolute; border: 1px solid rgba(99,102,241,0.22); border-radius: 10px; background: rgba(13,16,30,0.92); overflow: hidden; transition: left .85s cubic-bezier(.22,.8,.25,1), top .85s cubic-bezier(.22,.8,.25,1), width .85s cubic-bezier(.22,.8,.25,1), height .85s cubic-bezier(.22,.8,.25,1), opacity .45s ease, transform .85s cubic-bezier(.22,.8,.25,1), border-color .5s; }
+        .li-comp { position: absolute; border: 1px solid rgba(99,102,241,0.22); border-radius: 10px; background: var(--li-comp-bg); overflow: hidden; transition: left .85s cubic-bezier(.22,.8,.25,1), top .85s cubic-bezier(.22,.8,.25,1), width .85s cubic-bezier(.22,.8,.25,1), height .85s cubic-bezier(.22,.8,.25,1), opacity .45s ease, transform .85s cubic-bezier(.22,.8,.25,1), border-color .5s; }
         .li-comp.li-hidden { opacity: 0; transform: scale(0.85); pointer-events: none; }
         .li-comp-head { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-bottom: 1px solid rgba(99,102,241,0.14); }
         .li-ic { width: 8px; height: 8px; border-radius: 3px; background: var(--li-accent); flex: none; transition: background .5s; }
-        .li-t { font-family: var(--font-space, sans-serif); font-size: 0.66rem; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .li-t { font-family: var(--font-space, sans-serif); font-size: 0.66rem; font-weight: 600; color: var(--li-comp-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .li-comp-body { position: absolute; inset: 30px 0 0 0; padding: 8px 10px; transition: opacity .22s ease; font-size: 0.64rem; color: #9ca3af; }
         .li-headless .li-comp-body { inset: 0; }
         .li-swap .li-comp-body, .li-swap .li-t { opacity: 0; }
@@ -350,12 +376,12 @@ export default function LivingInterface() {
         .li-comp[data-v="topbar"] .li-comp-body, .li-comp[data-v="tabs"] .li-comp-body { display: flex; flex-direction: row; gap: 8px; align-items: center; }
         .li-nav-item { display: flex; align-items: center; gap: 7px; padding: 5px 8px; border-radius: 6px; white-space: nowrap; font-size: 0.64rem; }
         .li-nd { width: 6px; height: 6px; border-radius: 50%; background: rgba(156,163,175,0.5); flex: none; }
-        .li-nav-item.on { background: rgba(99,102,241,0.18); color: #f8fafc; }
+        .li-nav-item.on { background: rgba(99,102,241,0.18); color: var(--li-comp-text); }
         .li-nav-item.on .li-nd { background: var(--li-accent); }
 
         /* list rows */
         .li-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 5px 7px; border-radius: 6px; background: rgba(99,102,241,0.05); margin-bottom: 5px; }
-        .li-row b { color: #f8fafc; font-weight: 500; font-size: 0.64rem; }
+        .li-row b { color: var(--li-comp-text); font-weight: 500; font-size: 0.64rem; }
         .li-sub { font-size: 0.54rem; }
         .li-pill { font-size: 0.54rem; padding: 2px 7px; border-radius: 999px; background: rgba(99,102,241,0.16); color: #c7d2fe; white-space: nowrap; }
         .li-pill-ok { background: rgba(129,140,248,0.2); }
@@ -364,7 +390,7 @@ export default function LivingInterface() {
         /* cells / grid */
         .li-cells { display: grid; gap: 6px; height: 100%; align-content: start; }
         .li-cell { border-radius: 6px; background: rgba(99,102,241,0.07); border: 1px solid rgba(99,102,241,0.12); padding: 5px 6px; display: flex; flex-direction: column; justify-content: space-between; min-height: 34px; }
-        .li-cell b { color: #f8fafc; font-size: 0.58rem; font-weight: 500; }
+        .li-cell b { color: var(--li-comp-text); font-size: 0.58rem; font-weight: 500; }
         .li-cell.li-cell-fill { background: rgba(99,102,241,0.22); border-color: var(--li-accent); }
         .li-cell small { font-size: 0.5rem; color: #9ca3af; }
 
@@ -377,25 +403,25 @@ export default function LivingInterface() {
         .li-qr-wrap { display: flex; gap: 10px; align-items: center; height: 100%; }
         .li-qr { display: grid; grid-template-columns: repeat(9,1fr); gap: 2px; width: 46%; aspect-ratio: 1; flex: none; }
         .li-qr i { background: rgba(99,102,241,0.1); border-radius: 1.5px; }
-        .li-qr i.on { background: #c7d2fe; }
-        .li-qr-txt b { color: #f8fafc; font-size: 0.66rem; display: block; margin-bottom: 4px; }
+        .li-qr i.on { background: var(--li-qr-dot); }
+        .li-qr-txt b { color: var(--li-comp-text); font-size: 0.66rem; display: block; margin-bottom: 4px; }
         .li-qr-txt { font-size: 0.6rem; color: #9ca3af; }
 
         /* keypad */
         .li-pad { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; height: 100%; align-content: stretch; }
-        .li-pad span { display: flex; align-items: center; justify-content: center; border-radius: 7px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.14); font-family: var(--font-space, sans-serif); color: #f8fafc; font-size: 0.72rem; }
+        .li-pad span { display: flex; align-items: center; justify-content: center; border-radius: 7px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.14); font-family: var(--font-space, sans-serif); color: var(--li-comp-text); font-size: 0.72rem; }
         .li-pad span.go { background: var(--li-accent); color: #fff; grid-column: span 2; }
 
         /* payment */
         .li-pay-btn { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,#6366f1,#a78bfa,#818cf8); color: #fff; border-radius: 8px; font-family: var(--font-space, sans-serif); font-weight: 600; font-size: 0.72rem; padding: 10px; margin-top: 6px; }
         .li-pay-line { display: flex; justify-content: space-between; padding: 3px 2px; font-size: 0.64rem; }
-        .li-pay-line b { color: #f8fafc; font-weight: 500; }
+        .li-pay-line b { color: var(--li-comp-text); font-weight: 500; }
 
         /* caption */
         .li-caption { margin-top: 16px; min-height: 44px; display: flex; align-items: flex-start; gap: 10px; }
         .li-led { width: 8px; height: 8px; border-radius: 50%; background: var(--li-accent); margin-top: 5px; flex: none; box-shadow: 0 0 12px var(--li-accent); transition: background .5s; }
         .li-caption p { font-size: 0.86rem; color: #9ca3af; line-height: 1.55; }
-        .li-caption p b { color: #f8fafc; font-weight: 600; }
+        .li-caption p b { color: var(--li-comp-text); font-weight: 600; }
 
         /* tagline */
         .li-tagline { text-align: center; font-family: var(--font-space, sans-serif); font-weight: 700; font-size: clamp(1.3rem, 2.6vw, 2rem); margin-top: 88px; }
@@ -404,11 +430,11 @@ export default function LivingInterface() {
         /* manifesto */
         .li-manifesto { max-width: 62ch; margin: 28px auto 0; color: #9ca3af; line-height: 1.75; font-size: 0.98rem; }
         .li-manifesto p + p { margin-top: 18px; }
-        .li-manifesto b { color: #f8fafc; font-weight: 600; }
+        .li-manifesto b { color: var(--li-comp-text); font-weight: 600; }
 
         /* waitlist */
         .li-waitlist { display: flex; gap: 12px; justify-content: center; margin-top: 44px; flex-wrap: wrap; }
-        .li-waitlist input { background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; color: #f8fafc; padding: 13px 18px; font-size: 0.92rem; width: 290px; outline: none; font-family: var(--font-inter, sans-serif); }
+        .li-waitlist input { background: var(--li-input-bg); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; color: var(--li-input-text); padding: 13px 18px; font-size: 0.92rem; width: 290px; outline: none; font-family: var(--font-inter, sans-serif); }
         .li-waitlist input:focus { border-color: #a78bfa; }
         .li-waitlist button { background: linear-gradient(135deg,#6366f1,#a78bfa); color: #fff; border: none; border-radius: 12px; font-family: var(--font-space, sans-serif); font-weight: 600; font-size: 0.92rem; padding: 13px 24px; cursor: pointer; transition: opacity .2s; }
         .li-waitlist button:hover { opacity: 0.88; }
@@ -572,3 +598,4 @@ export default function LivingInterface() {
     </>
   )
 }
+
