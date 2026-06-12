@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 
 // ── Physics ──────────────────────────────────────────────────────────────────
-const REPEL_R  = 0.50   // small cursor parting zone
+const REPEL_R  = 0.50
 const REPEL_F  = 0.14
 const SPRING_K = 0.045
 const DAMPING  = 0.88
@@ -14,6 +14,19 @@ const PALETTE = [
   '#4f46e5','#6366f1','#818cf8','#a5b4fc',
   '#7c3aed','#8b5cf6','#a78bfa','#c4b5fd',
 ]
+
+// ── Six app-vertical nodes (Phase 1 — idle only) ─────────────────────────────
+// Positions spread across the Gaussian cloud (σx=0.65, σy=0.85) so each node
+// sits inside the dense region but isn't hidden by other nodes.
+// Geometries chosen for visual distinctiveness at ~0.09 world-unit radius.
+const NODE_DATA = [
+  { label: 'restaurant',    x: -0.48, y:  0.42, z:  0.05, color: '#818cf8', geo: 'icosa'  },
+  { label: 'smoke shop',    x:  0.54, y:  0.50, z: -0.05, color: '#a78bfa', geo: 'octa'   },
+  { label: 'gaming venue',  x: -0.62, y: -0.08, z:  0.05, color: '#c4b5fd', geo: 'box'    },
+  { label: 'ranch event',   x:  0.57, y: -0.28, z: -0.05, color: '#6366f1', geo: 'tetra'  },
+  { label: 'booking venue', x: -0.26, y: -0.58, z:  0.00, color: '#8b5cf6', geo: 'sphere' },
+  { label: 'business',      x:  0.32, y: -0.62, z:  0.00, color: '#4338ca', geo: 'dodeca' },
+] as const
 
 export default function Hero3DObject() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -102,6 +115,69 @@ export default function Hero3DObject() {
       })
       ;[sIM, bIM, rIM].forEach((m: any) => { m.instanceColor.needsUpdate = true })
 
+      // ── Nodes: solid mesh + edge wireframe + additive glow sprite ────
+      function makeGlowTex(hex: string): any {
+        const sz = 128
+        const cv = document.createElement('canvas')
+        cv.width = cv.height = sz
+        const cx = cv.getContext('2d')!
+        const c3 = new THREE.Color(hex)
+        const rr = Math.round(c3.r * 255)
+        const gg = Math.round(c3.g * 255)
+        const bb = Math.round(c3.b * 255)
+        const gr = cx.createRadialGradient(sz/2, sz/2, 0, sz/2, sz/2, sz/2)
+        gr.addColorStop(0,    `rgba(${rr},${gg},${bb},1)`)
+        gr.addColorStop(0.25, `rgba(${rr},${gg},${bb},0.4)`)
+        gr.addColorStop(1,    `rgba(${rr},${gg},${bb},0)`)
+        cx.fillStyle = gr
+        cx.fillRect(0, 0, sz, sz)
+        return new THREE.CanvasTexture(cv)
+      }
+
+      const nodeGeoMap: Record<string, any> = {
+        icosa:  new THREE.IcosahedronGeometry(0.088, 0),
+        octa:   new THREE.OctahedronGeometry(0.088, 0),
+        box:    new THREE.BoxGeometry(0.11, 0.11, 0.11),
+        tetra:  new THREE.TetrahedronGeometry(0.096, 0),
+        sphere: new THREE.SphereGeometry(0.078, 8, 6),
+        dodeca: new THREE.DodecahedronGeometry(0.082, 0),
+      }
+
+      interface NodeObj { bx: number; by: number; bz: number; solid: any; wire: any; glow: any }
+      const nodeObjs: NodeObj[] = NODE_DATA.map(nd => {
+        const geo = nodeGeoMap[nd.geo]
+
+        const solid: any = new THREE.Mesh(
+          geo,
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(nd.color), transparent: true, opacity: 0.90 })
+        )
+        solid.position.set(nd.x, nd.y, nd.z)
+        scene.add(solid)
+
+        const wire: any = new THREE.LineSegments(
+          new THREE.EdgesGeometry(geo),
+          new THREE.LineBasicMaterial({ color: new THREE.Color(nd.color), transparent: true, opacity: 0.40 })
+        )
+        wire.position.copy(solid.position)
+        scene.add(wire)
+
+        const glow: any = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: makeGlowTex(nd.color),
+            transparent: true,
+            opacity: 0.55,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            depthTest: false,
+          })
+        )
+        glow.position.copy(solid.position)
+        glow.scale.setScalar(0.52)
+        scene.add(glow)
+
+        return { bx: nd.x, by: nd.y, bz: nd.z, solid, wire, glow }
+      })
+
       // ── Mouse — global listener, lerp-smoothed ────────────────────
       const m2d    = new THREE.Vector2(-99, -99)
       const m3d    = new THREE.Vector3()
@@ -177,6 +253,23 @@ export default function Hero3DObject() {
         sIM.instanceMatrix.needsUpdate = true
         bIM.instanceMatrix.needsUpdate = true
         rIM.instanceMatrix.needsUpdate = true
+
+        // ── Node idle animation (bob + rotate + pulse) ─────────────────
+        nodeObjs.forEach((nd, i) => {
+          const ph    = i * 1.05
+          const bob   = Math.sin(t * 0.38 + ph) * 0.035
+          const pulse = 1 + Math.sin(t * 0.72 + ph) * 0.07
+          const py    = nd.by + bob
+          nd.solid.position.set(nd.bx, py, nd.bz)
+          nd.solid.rotation.y = t * 0.28 + ph
+          nd.solid.rotation.x = t * 0.17 + ph * 0.6
+          nd.solid.scale.setScalar(pulse)
+          nd.wire.position.copy(nd.solid.position)
+          nd.wire.rotation.copy(nd.solid.rotation)
+          nd.wire.scale.copy(nd.solid.scale)
+          nd.glow.position.copy(nd.solid.position)
+          nd.glow.scale.setScalar(0.52 * pulse)
+        })
 
         scene.rotation.y = Math.sin(t * 0.09) * 0.05
         scene.rotation.x = Math.sin(t * 0.07) * 0.020
