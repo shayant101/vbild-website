@@ -364,14 +364,17 @@ section { padding: 110px 6%; }
 
 /* ── NEW WORLD TEASER ── */
 #new-world-teaser {
-  background: linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
+  background: linear-gradient(140deg, #0a0718 0%, #0e0b24 40%, #0a0e20 100%);
   position: relative; overflow: hidden;
+  border-top: 1px solid rgba(168,85,247,0.18);
+  border-bottom: 1px solid rgba(99,102,241,0.12);
 }
 #new-world-teaser::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 80% at 80% 50%, rgba(168,85,247,0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 60% at 20% 50%, rgba(99,102,241,0.06) 0%, transparent 70%);
+    radial-gradient(ellipse 70% 90% at 85% 50%, rgba(168,85,247,0.13) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 70% at 15% 50%, rgba(99,102,241,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 50% 100%, rgba(34,211,238,0.05) 0%, transparent 60%);
 }
 .nwt-inner {
   display: grid; grid-template-columns: 1fr 1fr; gap: 5rem;
