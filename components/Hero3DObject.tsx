@@ -3,12 +3,12 @@
 import { useEffect, useRef } from 'react'
 
 // ── Physics ──────────────────────────────────────────────────────────────────
-const REPEL_R  = 0.50   // tiny cursor zone — precise galaxy parting, not a huge bubble
+const REPEL_R  = 0.50   // small cursor parting zone
 const REPEL_F  = 0.14
 const SPRING_K = 0.045
 const DAMPING  = 0.88
 
-// Deep-space indigo / violet / pale-blue — monochromatic star field
+// Deep-space indigo / violet — monochromatic
 const PALETTE = [
   '#1e1b4b','#312e81','#3730a3','#4338ca',
   '#4f46e5','#6366f1','#818cf8','#a5b4fc',
@@ -37,9 +37,9 @@ export default function Hero3DObject() {
       renderer.setClearColor(0x000000, 0)
       container.appendChild(renderer.domElement)
 
-      // ── Counts — tripled from previous (500+180+120 → 1500+540+360) ──
+      // ── Counts — 3× previous (1 500 + 540 + 360 = 2 400 total) ──
       const NS = 1500, NB = 540, NR = 360
-      const N  = NS + NB + NR   // 2 400 total
+      const N  = NS + NB + NR
 
       interface Particle {
         bp: any; pos: any; vel: any
@@ -50,7 +50,7 @@ export default function Hero3DObject() {
       const col = PALETTE.map(h => new THREE.Color(h))
       let si = 0, bi = 0, ri = 0
 
-      // Ellipsoid — slightly flattened on Z for galaxy-disk feel
+      // Flattened ellipsoid → galaxy-disk distribution
       function sample(): any {
         for (;;) {
           const x = (Math.random() * 2 - 1) * 2.4
@@ -66,43 +66,15 @@ export default function Hero3DObject() {
         const bp = sample()
         pts.push({
           bp: bp.clone(), pos: bp.clone(), vel: new THREE.Vector3(),
-          sc: 0.4 + Math.random() * 0.9,
+          sc: 0.4 + Math.random() * 1.8,   // wide scale = size variety
           tp, ix: tp === 0 ? si++ : tp === 1 ? bi++ : ri++,
         })
       }
 
-      // Pre-filter by type for fast per-frame updates
-      const sPts = pts.filter(p => p.tp === 0)   // spheres → Points
-      const bPts = pts.filter(p => p.tp === 1)   // boxes  → InstancedMesh
-      const rPts = pts.filter(p => p.tp === 2)   // rings  → InstancedMesh
-
-      // ── STARS: THREE.Points — 1-2 px per particle, true galaxy look ──
-      const sPos = new Float32Array(NS * 3)
-      const sCol = new Float32Array(NS * 3)
-
-      sPts.forEach((p, i) => {
-        sPos[i*3] = p.pos.x; sPos[i*3+1] = p.pos.y; sPos[i*3+2] = p.pos.z
-        const c = col[Math.floor(Math.random() * col.length)]
-        sCol[i*3] = c.r; sCol[i*3+1] = c.g; sCol[i*3+2] = c.b
-      })
-
-      const sGeo = new THREE.BufferGeometry()
-      const sPosAttr = new THREE.BufferAttribute(sPos, 3)
-      sGeo.setAttribute('position', sPosAttr)
-      sGeo.setAttribute('color',    new THREE.BufferAttribute(sCol, 3))
-
-      const sMat = new THREE.PointsMaterial({
-        size: 1.6,               // pixels — pixel-level star dots
-        sizeAttenuation: false,  // uniform size = true starfield (no fisheye effect)
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.88,
-      })
-      scene.add(new THREE.Points(sGeo, sMat))
-
-      // ── ACCENT SHAPES: tiny InstancedMesh boxes + rings ──────────
+      // ── InstancedMesh for ALL three shape types ───────────────────
+      // (user wants the actual 3-D shapes, just smaller and more of them)
       function mkIM(geo: any, n: number) {
-        const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.65 })
+        const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.80 })
         const im: any = new THREE.InstancedMesh(geo, mat, n)
         im.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
         im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3)
@@ -110,13 +82,18 @@ export default function Hero3DObject() {
         return im
       }
 
-      // 10× smaller geometry than the previous iteration
-      const bIM = mkIM(new THREE.BoxGeometry(0.0030, 0.0030, 0.0030), NB)
-      const rIM = mkIM(new THREE.RingGeometry(0.0008, 0.0020, 5), NR)
+      // ~5× smaller than the "party popper" sizes — tiny but still visibly shaped
+      // sphere r=0.007 → ~2 px at scale 1; box 0.009 → ~2.7 px; ring 0.004–0.009 → ~2 px
+      const sIM = mkIM(new THREE.SphereGeometry(0.007, 5, 4), NS)
+      const bIM = mkIM(new THREE.BoxGeometry(0.009, 0.009, 0.009), NB)
+      const rIM = mkIM(new THREE.RingGeometry(0.004, 0.009, 5), NR)
 
-      bPts.forEach(p => { bIM.setColorAt(p.ix, col[Math.floor(Math.random() * col.length)]) })
-      rPts.forEach(p => { rIM.setColorAt(p.ix, col[Math.floor(Math.random() * col.length)]) })
-      ;[bIM, rIM].forEach((m: any) => { m.instanceColor.needsUpdate = true })
+      pts.forEach(p => {
+        const c  = col[Math.floor(Math.random() * col.length)]
+        const im = p.tp === 0 ? sIM : p.tp === 1 ? bIM : rIM
+        im.setColorAt(p.ix, c)
+      })
+      ;[sIM, bIM, rIM].forEach((m: any) => { m.instanceColor.needsUpdate = true })
 
       // ── Mouse — global listener, lerp-smoothed ────────────────────
       const m2d    = new THREE.Vector2(-99, -99)
@@ -147,7 +124,7 @@ export default function Hero3DObject() {
         rc.ray.intersectPlane(zpl, m3dRaw)
         m3d.lerp(m3dRaw, 0.08)
 
-        // ── Physics (all 2 400 particles) ─────────────────────────
+        // ── Particle physics ───────────────────────────────────────
         pts.forEach(p => {
           const dx   = p.pos.x - m3d.x
           const dy   = p.pos.y - m3d.y
@@ -165,45 +142,35 @@ export default function Hero3DObject() {
           p.vel.y += (p.bp.y - p.pos.y) * SPRING_K
           p.vel.z += (p.bp.z - p.pos.z) * SPRING_K
 
-          // Tiny organic nebula drift
           p.vel.x += Math.sin(t * 0.22 + p.bp.y * 3.1) * 0.00018
           p.vel.y += Math.cos(t * 0.18 + p.bp.x * 2.7) * 0.00018
 
           p.vel.x *= DAMPING; p.vel.y *= DAMPING; p.vel.z *= DAMPING
           p.pos.x += p.vel.x; p.pos.y += p.vel.y; p.pos.z += p.vel.z
-        })
 
-        // ── Write star positions to BufferAttribute ────────────────
-        sPts.forEach((p, i) => {
-          sPosAttr.setXYZ(i, p.pos.x, p.pos.y, p.pos.z)
-        })
-        sPosAttr.needsUpdate = true
-
-        // ── Write box matrices ─────────────────────────────────────
-        bPts.forEach(p => {
           dum.position.set(p.pos.x, p.pos.y, p.pos.z)
           dum.scale.setScalar(p.sc)
-          dum.rotation.x = t * 0.22 + p.bp.x * 1.4
-          dum.rotation.y = t * 0.30 + p.bp.y * 1.2
-          dum.rotation.z = 0
+
+          if (p.tp === 1) {
+            dum.rotation.x = t * 0.22 + p.bp.x * 1.4
+            dum.rotation.y = t * 0.30 + p.bp.y * 1.2
+            dum.rotation.z = 0
+          } else if (p.tp === 2) {
+            dum.rotation.x = Math.PI / 2
+            dum.rotation.y = 0
+            dum.rotation.z = t * 0.45 + p.bp.x * 1.6
+          } else {
+            dum.rotation.set(0, 0, 0)
+          }
+
           dum.updateMatrix()
-          bIM.setMatrixAt(p.ix, dum.matrix)
+          ;(p.tp === 0 ? sIM : p.tp === 1 ? bIM : rIM).setMatrixAt(p.ix, dum.matrix)
         })
+
+        sIM.instanceMatrix.needsUpdate = true
         bIM.instanceMatrix.needsUpdate = true
-
-        // ── Write ring matrices ────────────────────────────────────
-        rPts.forEach(p => {
-          dum.position.set(p.pos.x, p.pos.y, p.pos.z)
-          dum.scale.setScalar(p.sc)
-          dum.rotation.x = Math.PI / 2
-          dum.rotation.y = 0
-          dum.rotation.z = t * 0.45 + p.bp.x * 1.6
-          dum.updateMatrix()
-          rIM.setMatrixAt(p.ix, dum.matrix)
-        })
         rIM.instanceMatrix.needsUpdate = true
 
-        // Slow galaxy rotation
         scene.rotation.y = Math.sin(t * 0.09) * 0.05
         scene.rotation.x = Math.sin(t * 0.07) * 0.020
 
