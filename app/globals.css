@@ -756,6 +756,8 @@ html[data-theme="light"] #new-world-teaser {
   --border2:    rgba(255,255,255,0.06);
   --card:       rgba(255,255,255,0.025);
   --card-hover: rgba(99,102,241,0.07);
+  /* Force text color — overrides inherited light-mode body color */
+  color:        #f8fafc;
 }
 
 /* ── THEME TOGGLE BUTTON ── */
@@ -778,3 +780,4 @@ html[data-theme="light"] #new-world-teaser {
   border-color: rgba(99,102,241,0.35);
   background: rgba(99,102,241,0.07);
 }
+
