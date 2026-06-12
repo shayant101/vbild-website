@@ -23,6 +23,16 @@
   --card-hover: rgba(99,102,241,0.07);
   --glow: 0 0 60px rgba(99,102,241,0.2);
   --glow2: 0 0 80px rgba(168,85,247,0.2);
+
+  /* NWT section */
+  --nwt-section-bg:  linear-gradient(140deg, #0a0718 0%, #0e0b24 40%, #0a0e20 100%);
+  --nwt-frame-bg:    rgba(16,16,31,0.90);
+  --nwt-frame-border:rgba(168,85,247,0.20);
+  --nwt-bar-bg:      rgba(255,255,255,0.03);
+  --nwt-bar-border:  rgba(255,255,255,0.06);
+  --nwt-sep:         rgba(255,255,255,0.05);
+  --nwt-row-hover:   rgba(255,255,255,0.025);
+  --nwt-frame-shadow:0 28px 80px rgba(0,0,0,0.60), 0 0 0 1px rgba(255,255,255,0.04);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -364,7 +374,7 @@ section { padding: 110px 6%; }
 
 /* ── NEW WORLD TEASER ── */
 #new-world-teaser {
-  background: linear-gradient(140deg, #0a0718 0%, #0e0b24 40%, #0a0e20 100%);
+  background: var(--nwt-section-bg);
   position: relative; overflow: hidden;
   border-top: 1px solid rgba(168,85,247,0.18);
   border-bottom: 1px solid rgba(99,102,241,0.12);
@@ -422,11 +432,11 @@ section { padding: 110px 6%; }
   display: flex; align-items: center; justify-content: center;
 }
 .nwt-frame {
-  background: rgba(16,16,31,0.9);
-  border: 1px solid rgba(168,85,247,0.2);
+  background: var(--nwt-frame-bg);
+  border: 1px solid var(--nwt-frame-border);
   border-radius: 16px; padding: 0; overflow: hidden;
   width: 100%; max-width: 420px;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  box-shadow: var(--nwt-frame-shadow);
   position: relative;
 }
 .nwt-frame-glow {
@@ -437,8 +447,8 @@ section { padding: 110px 6%; }
 }
 .nwt-frame-bar {
   display: flex; align-items: center; gap: 0.45rem;
-  padding: 0.75rem 1rem; background: rgba(255,255,255,0.03);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0.75rem 1rem; background: var(--nwt-bar-bg);
+  border-bottom: 1px solid var(--nwt-bar-border);
 }
 .nwt-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .nwt-dot.red { background: #ff5f57; }
@@ -450,7 +460,7 @@ section { padding: 110px 6%; }
 }
 .nwt-frame-nav {
   display: flex; gap: 0.4rem; padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05); overflow-x: auto;
+  border-bottom: 1px solid var(--nwt-sep); overflow-x: auto;
 }
 .nwt-nav-pill {
   font-size: 0.72rem; font-weight: 600; padding: 0.3rem 0.75rem;
@@ -463,11 +473,11 @@ section { padding: 110px 6%; }
 }
 .nwt-stats-row {
   display: grid; grid-template-columns: repeat(3,1fr); gap: 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--nwt-sep);
 }
 .nwt-sc {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 1rem 0.5rem; border-right: 1px solid rgba(255,255,255,0.05);
+  padding: 1rem 0.5rem; border-right: 1px solid var(--nwt-sep);
 }
 .nwt-sc:last-child { border-right: none; }
 .nwt-sc-num {
@@ -476,7 +486,7 @@ section { padding: 110px 6%; }
 }
 .nwt-sc-lbl { font-size: 0.65rem; color: var(--muted); margin-top: 0.2rem; font-weight: 500; }
 .nwt-prog-wrap {
-  height: 4px; background: rgba(255,255,255,0.05); margin: 0;
+  height: 4px; background: var(--nwt-sep); margin: 0;
   overflow: hidden;
 }
 .nwt-prog-fill {
@@ -494,11 +504,11 @@ section { padding: 110px 6%; }
 .nwt-row {
   display: flex; align-items: center; gap: 0.6rem;
   padding: 0.55rem 1rem; font-size: 0.78rem; color: var(--muted2); font-weight: 500;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--nwt-sep);
   transition: background 0.2s;
 }
 .nwt-row:last-child { border-bottom: none; }
-.nwt-row:hover { background: rgba(255,255,255,0.02); }
+.nwt-row:hover { background: var(--nwt-row-hover); }
 .nwt-row-dot {
   width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
 }
@@ -748,16 +758,38 @@ html[data-theme="light"] .price-card.featured {
   background: linear-gradient(160deg, rgba(99,102,241,0.05) 0%, rgba(168,85,247,0.03) 100%);
 }
 
-/* ── #new-world-teaser always stays dark — reset vars to dark palette ── */
-html[data-theme="light"] #new-world-teaser {
-  --text:       #f8fafc;
-  --muted:      #64748b;
-  --muted2:     #94a3b8;
-  --border2:    rgba(255,255,255,0.06);
-  --card:       rgba(255,255,255,0.025);
-  --card-hover: rgba(99,102,241,0.07);
-  /* Force text color — overrides inherited light-mode body color */
-  color:        #f8fafc;
+/* ── NWT light-mode palette ── */
+html[data-theme="light"] {
+  --nwt-section-bg:  linear-gradient(140deg, #edeaff 0%, #f5f2ff 40%, #eaedff 100%);
+  --nwt-frame-bg:    rgba(255,255,255,0.97);
+  --nwt-frame-border:rgba(99,102,241,0.18);
+  --nwt-bar-bg:      rgba(0,0,0,0.025);
+  --nwt-bar-border:  rgba(0,0,0,0.07);
+  --nwt-sep:         rgba(0,0,0,0.065);
+  --nwt-row-hover:   rgba(0,0,0,0.025);
+  --nwt-frame-shadow:0 12px 48px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.08);
+}
+html[data-theme="light"] #new-world-teaser::before {
+  background:
+    radial-gradient(ellipse 70% 90% at 85% 50%, rgba(168,85,247,0.06) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 70% at 15% 50%, rgba(99,102,241,0.05) 0%, transparent 65%);
+}
+html[data-theme="light"] .nwt-frame-glow { opacity: 0.15; }
+html[data-theme="light"] .nwt-cta {
+  color: #5b5cf6;
+  border-color: rgba(99,102,241,0.35);
+  background: rgba(99,102,241,0.07);
+}
+html[data-theme="light"] .nwt-cta:hover {
+  background: rgba(99,102,241,0.14);
+  border-color: rgba(99,102,241,0.6);
+  color: #fff;
+  box-shadow: 0 8px 28px rgba(99,102,241,0.25);
+}
+html[data-theme="light"] .nwt-nav-pill.active {
+  background: rgba(99,102,241,0.10);
+  color: #6366f1;
+  border-color: rgba(99,102,241,0.22);
 }
 
 /* ── THEME TOGGLE BUTTON ── */
