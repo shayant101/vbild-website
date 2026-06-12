@@ -120,16 +120,19 @@ nav.scrolled {
 @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
 .hero-headline {
   font-family: var(--font-space), sans-serif;
-  font-size: clamp(2.8rem, 6.5vw, 6rem);
-  font-weight: 800; line-height: 1.03; letter-spacing: -0.04em;
+  font-size: clamp(2.4rem, 5.2vw, 4.8rem);
+  font-weight: 800; line-height: 1.08; letter-spacing: -0.04em;
   margin-bottom: 1.6rem;
   animation: fadeInUp 0.9s 0.1s ease both;
 }
 .hero-headline .line1 { display: block; }
-.hero-headline .line2 { display: block; }
+/* min-height locks the line to exactly one line-height — prevents the
+   layout gap that appears when the typed word is empty or wraps */
+.hero-headline .line2 { display: block; min-height: 1.1em; overflow: hidden; }
 .type-target {
   background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   display: inline-block; min-width: 2ch;
+  white-space: nowrap; /* never wrap mid-word — prevents 2-line jump */
 }
 .type-cursor {
   display: inline-block; width: 3px; height: 0.9em; background: var(--indigo);
