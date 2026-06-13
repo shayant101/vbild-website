@@ -308,7 +308,7 @@ export default function LivingInterface() {
           --li-comp-bg:     rgba(255,255,255,0.98);
           --li-titlebar-bg: rgba(234,234,245,0.94);
           --li-comp-text:   #0f0f1a;
-          --li-old-frame-bg:#e2e3ee;
+          --li-old-frame-bg:#eeeff8;
           --li-old-row-bg:  #c8cad8;
           --li-old-cell-bg: #d0d2e0;
           --li-input-bg:    rgba(255,255,255,0.9);
@@ -317,22 +317,35 @@ export default function LivingInterface() {
           --li-old-bar-dot: #9ca3af;
           --li-muted:       #6b7280;
           --li-frame-shadow:0 12px 48px rgba(0,0,0,0.13), 0 0 0 1px rgba(99,102,241,0.10);
-          --li-old-opacity: 0.9;
+          --li-old-opacity: 0.92;
           --li-row-bg:      rgba(99,102,241,0.04);
         }
+        html[data-theme="light"] .li-chip { color: #6b7280; background: rgba(99,102,241,0.05); }
+        html[data-theme="light"] .li-chip:hover { color: #1f2937; background: rgba(99,102,241,0.10); }
+        html[data-theme="light"] .li-chip.active { color: #fff; background: #6366f1; border-color: #6366f1; }
+        html[data-theme="light"] .li-world-label { color: inherit; }
+        html[data-theme="light"] .li-old-col .li-world-label { color: #6b7280; }
+        html[data-theme="light"] .li-new-col .li-world-label { color: #7c3aed; }
         .li-page { max-width: 1180px; margin: 0 auto; padding: 120px 24px 120px; }
 
         /* kicker */
         .li-kicker { font-size: 0.78rem; letter-spacing: 0.12em; color: #a78bfa; text-transform: uppercase; text-align: center; margin-bottom: 18px; }
 
-        /* h1 */
-        .li-h1 { font-family: var(--font-space, 'Space Grotesk', sans-serif); font-weight: 700; text-align: center; font-size: clamp(1.9rem, 4.2vw, 3.4rem); line-height: 1.15; max-width: 21ch; margin: 0 auto; }
-        .li-h1 .old { color: #9ca3af; }
-        .li-h1 .new { background: linear-gradient(135deg,#6366f1,#a78bfa,#818cf8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        /* hero contrast */
+        .li-contrast { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0 3.5rem; max-width: 820px; margin: 52px auto 0; align-items: center; }
+        .li-contrast-old { text-align: right; }
+        .li-contrast-new { text-align: left; }
+        .li-contrast-mid { font-size: 1.6rem; color: #c4b5fd; text-align: center; padding: 0 0.5rem; opacity: 0.7; }
+        .li-contrast-era { font-size: 0.66rem; letter-spacing: 0.14em; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 0.6rem; }
+        .li-contrast-old .li-contrast-era { color: #9ca3af; }
+        .li-contrast-new .li-contrast-era { color: #a78bfa; }
+        .li-contrast-old p { font-family: var(--font-space, sans-serif); font-size: clamp(1rem, 1.8vw, 1.5rem); font-weight: 700; line-height: 1.3; color: #9ca3af; text-decoration: line-through; text-decoration-color: rgba(156,163,175,0.45); }
+        .li-contrast-new p { font-family: var(--font-space, sans-serif); font-size: clamp(1.25rem, 2.6vw, 2rem); font-weight: 800; line-height: 1.2; background: linear-gradient(135deg,#6366f1,#a78bfa,#818cf8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        html[data-theme="light"] .li-contrast-old p { color: #9ca3af; }
         .li-sub { text-align: center; color: var(--li-muted); max-width: 60ch; margin: 20px auto 0; line-height: 1.65; font-size: 1.02rem; }
 
         /* worlds grid */
-        .li-worlds { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: stretch; margin-top: 64px; }
+        .li-worlds { display: flex; flex-direction: column; gap: 40px; margin-top: 60px; }
         .li-world-label { font-family: var(--font-space, sans-serif); font-size: 0.72rem; letter-spacing: 0.14em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .li-world-label .dot { width: 7px; height: 7px; border-radius: 50%; }
         .li-old-col .li-world-label { color: #6b7280; }
@@ -341,16 +354,25 @@ export default function LivingInterface() {
         .li-new-col .dot { background: #a78bfa; box-shadow: 0 0 10px rgba(167,139,250,0.9); }
 
         /* old world */
-        .li-old-frame { border: 1px solid rgba(107,114,128,0.25); border-radius: 14px; background: var(--li-old-frame-bg); height: 100%; min-height: 380px; filter: grayscale(1); opacity: var(--li-old-opacity); display: flex; flex-direction: column; overflow: hidden; }
-        .li-old-bar { height: 30px; border-bottom: 1px solid rgba(107,114,128,0.2); display: flex; align-items: center; gap: 5px; padding: 0 10px; }
+        .li-old-frame { border: 1px solid rgba(107,114,128,0.22); border-radius: 14px; background: var(--li-old-frame-bg); filter: grayscale(0.9); opacity: var(--li-old-opacity); display: flex; flex-direction: column; overflow: hidden; }
+        .li-old-bar { height: 30px; border-bottom: 1px solid rgba(107,114,128,0.18); display: flex; align-items: center; gap: 5px; padding: 0 10px; flex-shrink: 0; }
         .li-old-bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--li-old-bar-dot); }
-        .li-old-bar span { font-size: 0.62rem; color: #6b7280; margin-left: 6px; }
-        .li-old-body { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-        .li-old-row { height: 22px; background: var(--li-old-row-bg); border-radius: 5px; }
-        .li-old-row.short { width: 55%; }
-        .li-old-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .li-old-cell { background: var(--li-old-cell-bg); border-radius: 7px; border: 1px solid rgba(107,114,128,0.12); }
-        .li-old-note { font-size: 0.74rem; color: #6b7280; text-align: center; padding: 12px 18px 16px; line-height: 1.5; }
+        .li-old-bar span { font-size: 0.62rem; color: #6b7280; margin-left: 6px; font-family: monospace; letter-spacing: 0.02em; }
+        .li-old-nav { display: flex; border-bottom: 1px solid rgba(107,114,128,0.18); flex-shrink: 0; overflow-x: auto; }
+        .li-old-nav span { font-size: 0.61rem; color: #6b7280; padding: 0.38rem 0.85rem; border-right: 1px solid rgba(107,114,128,0.12); cursor: default; white-space: nowrap; }
+        .li-old-nav span.on { background: rgba(107,114,128,0.12); color: var(--li-comp-text); font-weight: 600; }
+        .li-old-kpis { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid rgba(107,114,128,0.14); flex-shrink: 0; }
+        .li-old-kpi { padding: 0.55rem 0.85rem; border-right: 1px solid rgba(107,114,128,0.1); }
+        .li-old-kpi:last-child { border-right: none; }
+        .li-old-kpi em { font-size: 0.55rem; color: #9ca3af; display: block; margin-bottom: 2px; font-style: normal; text-transform: uppercase; letter-spacing: 0.04em; }
+        .li-old-kpi b { font-size: 0.82rem; color: var(--li-comp-text); font-family: monospace; font-weight: 700; }
+        .li-old-thead { display: grid; grid-template-columns: 0.4fr 1fr 0.7fr 0.55fr 0.55fr; padding: 0.28rem 0.85rem; background: rgba(107,114,128,0.07); border-bottom: 1px solid rgba(107,114,128,0.12); }
+        .li-old-thead span { font-size: 0.53rem; color: #9ca3af; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+        .li-old-trow { display: grid; grid-template-columns: 0.4fr 1fr 0.7fr 0.55fr 0.55fr; padding: 0.36rem 0.85rem; border-bottom: 1px solid rgba(107,114,128,0.07); align-items: center; }
+        .li-old-trow:last-child { border-bottom: none; }
+        .li-old-trow span { font-size: 0.61rem; color: #6b7280; font-family: monospace; }
+        .li-old-trow span.tag { font-size: 0.5rem; background: rgba(107,114,128,0.13); color: #6b7280; padding: 2px 6px; border-radius: 3px; font-family: sans-serif; border: 1px solid rgba(107,114,128,0.18); display: inline-block; }
+        .li-old-note { font-size: 0.72rem; color: #6b7280; text-align: center; padding: 8px 18px 10px; border-top: 1px solid rgba(107,114,128,0.1); line-height: 1.5; flex-shrink: 0; }
         .li-old-note b { color: #9ca3af; font-weight: 600; }
 
         /* chips */
@@ -454,8 +476,6 @@ export default function LivingInterface() {
         .li-back:hover { color: #a78bfa; }
 
         @media (max-width: 900px) {
-          .li-worlds { grid-template-columns: 1fr; }
-          .li-old-frame { min-height: 200px; }
           .li-frame { aspect-ratio: 4 / 4.6; }
           .li-comp-body { font-size: 0.58rem; }
         }
@@ -470,10 +490,17 @@ export default function LivingInterface() {
 
         <div className="li-kicker">The New World · Dynamic Software Interfaces</div>
 
-        <h1 className="li-h1">
-          <span className="old">In the old world, your business adapted to software.</span><br />
-          <span className="new">In the new world, software adapts to your business.</span>
-        </h1>
+        <div className="li-contrast">
+          <div className="li-contrast-old">
+            <span className="li-contrast-era">Before</span>
+            <p>Your business<br/>adapted to<br/>the software.</p>
+          </div>
+          <div className="li-contrast-mid">→</div>
+          <div className="li-contrast-new">
+            <span className="li-contrast-era">After</span>
+            <p>Software adapts<br/>to your<br/>business.</p>
+          </div>
+        </div>
 
         <p className="li-sub">
           Below is the same app — the same building blocks of booking, payments, lists, and alerts.
@@ -490,21 +517,30 @@ export default function LivingInterface() {
             <div className="li-old-frame">
               <div className="li-old-bar">
                 <i></i><i></i><i></i>
-                <span>GenericBiz Pro™ — same for every customer</span>
+                <span>GenericBiz Pro™ — one interface for every business</span>
               </div>
-              <div className="li-old-body">
-                <div className="li-old-row"></div>
-                <div className="li-old-row short"></div>
-                <div className="li-old-grid">
-                  <div className="li-old-cell"></div>
-                  <div className="li-old-cell"></div>
-                  <div className="li-old-cell"></div>
-                  <div className="li-old-cell"></div>
-                </div>
+              <div className="li-old-nav">
+                <span className="on">Dashboard</span>
+                <span>Contacts</span>
+                <span>Reports</span>
+                <span>Billing</span>
+                <span>Settings</span>
+                <span>Admin</span>
               </div>
-              <div className="li-old-note">
-                One interface for everyone.<br /><b>You</b> learn <b>its</b> workflow.
+              <div className="li-old-kpis">
+                <div className="li-old-kpi"><em>Total Revenue</em><b>$48,220</b></div>
+                <div className="li-old-kpi"><em>Active Records</em><b>1,284</b></div>
+                <div className="li-old-kpi"><em>Open Tasks</em><b>37</b></div>
+                <div className="li-old-kpi"><em>Alerts</em><b>12</b></div>
               </div>
+              <div className="li-old-thead">
+                <span>ID</span><span>Contact / Company</span><span>Status</span><span>Date</span><span>Amount</span>
+              </div>
+              <div className="li-old-trow"><span>#1041</span><span>Acme Corp</span><span className="tag">Active</span><span>06/10</span><span>$2,400</span></div>
+              <div className="li-old-trow"><span>#1040</span><span>Ranch LLC</span><span className="tag">Pending</span><span>06/09</span><span>$880</span></div>
+              <div className="li-old-trow"><span>#1039</span><span>Smoke Inc</span><span className="tag">Active</span><span>06/08</span><span>$1,120</span></div>
+              <div className="li-old-trow"><span>#1038</span><span>Venue Co</span><span className="tag">Closed</span><span>06/07</span><span>$3,200</span></div>
+              <div className="li-old-note"><b>You</b> learn <b>its</b> workflow. Every business gets the same screen.</div>
             </div>
           </div>
 
