@@ -438,7 +438,7 @@ function PrototypeView({ prd, screen, setScreen, onCTA }: { prd: PRD; screen: nu
           <span>{arch.emoji}</span> {prd.archetype.toUpperCase()}
         </div>
         <h2 className="bildr-prd-name">{prd.appName}</h2>
-        <p className="bildr-prd-tagline">"{prd.tagline}"</p>
+        <p className="bildr-prd-tagline">&quot;{prd.tagline}&quot;</p>
 
         <div className="bildr-prd-section">
           <div className="bildr-prd-label">Target User</div>
@@ -595,7 +595,7 @@ function MarketplaceHome({ prd, setScreen }: ScreenProps) {
     </div>
   )
 }
-function MarketplaceBrowse({ prd, setScreen }: ScreenProps) {
+function MarketplaceBrowse({ setScreen }: ScreenProps) {
   return (
     <div className="ps-wrap" style={{ background: '#022c22' }}>
       <div className="ps-status-bar"><span>9:41</span><span>●●●</span></div>
@@ -951,7 +951,7 @@ function BookingConfirm({ setScreen }: ScreenProps) {
 }
 
 /* ── ON-DEMAND ── */
-function OndemandHome({ prd, setScreen }: ScreenProps) {
+function OndemandHome({ setScreen }: ScreenProps) {
   return (
     <div className="ps-wrap" style={{ background: '#001200' }}>
       <div className="ps-status-bar"><span>9:41</span><span>●●●</span></div>
@@ -1064,10 +1064,10 @@ function ContentArticle({ setScreen }: ScreenProps) {
           <div><div style={{ fontSize: 10, fontWeight: 600 }}>Sarah Kim</div><div style={{ fontSize: 9, color: '#94a3b8' }}>Jun 17 · 2,419 reads</div></div>
         </div>
         <div style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.6 }}>
-          AI is no longer a feature — it's the foundation. The products winning in 2026 didn't bolt on AI; they were designed around it from day one. Here's what that looks like in practice…
+          {`AI is no longer a feature — it’s the foundation. The products winning in 2026 didn’t bolt on AI; they were designed around it from day one. Here’s what that looks like in practice…`}
         </div>
         <div style={{ borderLeft: '2px solid #f43f5e', paddingLeft: 8, margin: '10px 0', fontSize: 10, color: '#e2e8f0', fontStyle: 'italic' }}>
-          "The best AI products don't feel like AI. They feel like magic."
+          {`"The best AI products don't feel like AI. They feel like magic."`}
         </div>
       </div>
       <div className="ps-article-actions">
