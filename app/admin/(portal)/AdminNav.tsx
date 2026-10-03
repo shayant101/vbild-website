@@ -19,7 +19,7 @@ export default function AdminNav({ email }: { email: string }) {
   }
   return (
     <>
-      <nav className="admin-nav">
+      <div className="admin-nav" role="navigation">
         {ITEMS.map((i) => {
           const active = i.href === '/admin' ? path === '/admin' : path.startsWith(i.href)
           return (
@@ -29,7 +29,7 @@ export default function AdminNav({ email }: { email: string }) {
           )
         })}
         <Link href="/" target="_blank"><span className="ico">↗</span><span className="lbl">Public site</span></Link>
-      </nav>
+      </div>
       <div className="admin-side-foot">
         <div className="admin-user" title={email}>{email}</div>
         <button className="admin-logout" onClick={logout}>Sign out</button>

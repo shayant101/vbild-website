@@ -2,6 +2,9 @@
 .admin-root, .admin-root * { cursor: auto !important; }
 .admin-root a, .admin-root button, .admin-root [role="button"] { cursor: pointer !important; }
 .admin-root ~ .cursor-dot, .admin-root ~ .cursor-ring, .admin-root ~ .cursor-spotlight { display: none !important; }
+/* neutralise marketing-site element styles inside the portal */
+.admin-root section { padding: 0; }
+.admin-root h1, .admin-root h2, .admin-root h3 { line-height: 1.25; }
 body:has(.admin-root) .cursor-dot, body:has(.admin-root) .cursor-ring, body:has(.admin-root) .cursor-spotlight { display: none !important; }
 
 .admin-root {
@@ -136,3 +139,5 @@ body:has(.admin-root) .cursor-dot, body:has(.admin-root) .cursor-ring, body:has(
   .admin-user { display: none; }
   .admin-main { padding: 1.4rem 1.1rem 3rem; }
 }
+.detail-grid .agent-row { grid-template-columns: 44px 1.2fr 2fr auto; }
+.detail-grid .agent-row .agent-io { display: none; }
