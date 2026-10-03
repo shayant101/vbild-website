@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import LiveDemo from '@/components/demo/LiveDemo'
-import './demo.css'
 
 export const metadata: Metadata = {
   title: 'Live demo — Vbild builds a business app in about a minute',

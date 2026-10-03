@@ -3,13 +3,13 @@ import FadeIn from './FadeIn'
 const STEPS = [
   {
     num: '01',
-    title: 'Tell us what you need',
-    desc: 'Fill out the form or email us. We scope your app in a free 30-minute call — no obligation, no upsell.',
+    title: 'Talk to Bildr for 5 minutes',
+    desc: 'Our AI interviewer asks what you do and where it breaks, then drafts a spec and a clickable prototype on the spot. A human call follows if you want one.',
   },
   {
     num: '02',
-    title: 'We design & build with AI',
-    desc: 'Our AI-assisted process produces production-ready code in days. You review and approve at every stage.',
+    title: 'We build with Claude, you review daily',
+    desc: 'Spec → schema → screens → integrations, generated and reviewed by our engineers. Builds so far have shipped in 3–21 days.',
   },
   {
     num: '03',

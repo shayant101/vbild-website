@@ -5,10 +5,11 @@ import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 
 const NAV_LINKS = [
-  { label: 'Verticals', href: '#verticals' },
-  { label: 'Work', href: '#portfolio' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'Pay', href: '#pay' },
+  { label: 'Demo', href: '/#demo' },
+  { label: 'Work', href: '/#portfolio' },
+  { label: 'How it works', href: '/#how' },
+  { label: 'Pricing', href: '/#pricing' },
+  { label: 'Investors', href: '/investors' },
 ]
 
 export default function NavBar() {
@@ -38,7 +39,7 @@ export default function NavBar() {
             <span className="nav-nw-dot" />
             New World
           </Link>
-          <a href="#cta" className="nav-cta">Get Started</a>
+          <a href="https://cal.com/shayan-vbild/discovery-call" className="nav-cta" target="_blank" rel="noreferrer">Book a call</a>
         </div>
         <button
           className="hamburger"
@@ -60,7 +61,7 @@ export default function NavBar() {
         <Link href="/new-world" className="mobile-new-world" onClick={() => setMenuOpen(false)}>
           ✦ New World
         </Link>
-        <a href="#cta" onClick={() => setMenuOpen(false)}>Get Started</a>
+        <a href="https://cal.com/shayan-vbild/discovery-call" onClick={() => setMenuOpen(false)}>Book a call</a>
       </div>
     </>
   )
