@@ -1,0 +1,98 @@
+{
+  "asOf": "2026-10-02",
+  "company": {
+    "name": "Vbild, Inc.",
+    "incorporated": "Delaware C-corp, Sept 2025 (Stripe Atlas)",
+    "founder": "Shayan Toor",
+    "founderRoles": "Founder & CEO, Vbild · Chief Growth Officer, Innowi (restaurant kiosks)",
+    "programs": ["Claude for Startups (Anthropic)"],
+    "raise": { "type": "Pre-seed", "min": 500000, "max": 1000000, "instrument": "Post-money SAFE" },
+    "pricing": [
+      { "tier": "Starter", "setup": 3500, "monthlyLow": 99, "monthlyHigh": 199 },
+      { "tier": "Growth", "setup": 8000, "monthlyLow": 299, "monthlyHigh": 299 },
+      { "tier": "Pro", "setup": 25000, "monthlyLow": 499, "monthlyHigh": 499 }
+    ],
+    "acv": { "starter": 2955, "growth": 6255, "pro": 14321, "blended": 4350, "mix": "70/25/5", "note": "setup amortized over 3 yrs + 12 months subscription" },
+    "traction": {
+      "liveApps": 5,
+      "inBuild": 2,
+      "verticals": 5,
+      "payingCustomers": { "value": null, "verify": true },
+      "mrr": { "value": null, "verify": true },
+      "pipeline": { "value": null, "verify": true },
+      "medianDaysToShip": { "value": 14, "verify": true, "note": "range 3–21 days across shipped builds; estimate from delivery notes" },
+      "agencyQuoteAvoided": { "value": "$38K–$171K per app", "source": "clutch-2025" }
+    }
+  },
+  "smbCounts": [
+    { "id": "smb-total", "label": "US small businesses", "value": 36200000, "year": 2025, "source": "sba-2025" },
+    { "id": "employer-firms", "label": "US employer small firms", "value": 6395635, "year": 2025, "source": "sba-2025" },
+    { "id": "indep-restaurants", "label": "Independent restaurants", "value": 412498, "year": 2025, "source": "technomic-2026" },
+    { "id": "smoke-shops", "label": "Tobacco / vape shops (NAICS 459991)", "value": 28847, "year": 2022, "source": "census-ec-2022" },
+    { "id": "amusement", "label": "Arcades, FECs, VR, bowling, escape rooms", "value": 25000, "year": 2025, "source": "composite", "note": "composite of 713120/713990, IBISWorld bowling, Room Escape Artist; no clean VR count" },
+    { "id": "event-venues", "label": "Event venues + agritourism farms/ranches", "value": 65000, "year": 2024, "source": "composite", "note": "711310 (5,024), wedding venues (~35.8K), USDA agritourism farms (28,617)" },
+    { "id": "gyms", "label": "Gyms / fitness clubs", "value": 114370, "year": 2025, "source": "mmcg-2025" },
+    { "id": "auto", "label": "Auto repair shops", "value": 176403, "year": 2025, "source": "bls-2025" },
+    { "id": "dental", "label": "Dental practices", "value": 147280, "year": 2026, "source": "orbital-2026" },
+    { "id": "salons", "label": "Hair salons (incl. booth renters)", "value": 1059771, "year": 2025, "source": "ibisworld-2025", "note": "heavy nonemployer skew — excluded from base TAM" }
+  ],
+  "tamSamSom": {
+    "acv": 4500,
+    "tam": { "businesses": 968000, "value": 4400000000, "label": "Core 5 verticals + gyms, auto, dental (ex-salons)", "upper": 9100000000, "upperLabel": "incl. salons" },
+    "sam": { "businesses": 320000, "value": 1400000000, "label": "Core 5 verticals × ~60% already paying for software", "upper": 2400000000 },
+    "som": [
+      { "scenario": "Conservative", "customers": 300, "acv": 3500, "revenue": 1050000, "subArr": 550000 },
+      { "scenario": "Base", "customers": 600, "acv": 4500, "revenue": 2700000, "subArr": 1500000 },
+      { "scenario": "Aggressive", "customers": 1000, "acv": 5500, "revenue": 5500000, "subArr": 3000000 }
+    ]
+  },
+  "demand": [
+    { "id": "ai-adoption", "label": "US SMBs using AI regularly", "value": "77%", "prior": "48% (Jul 2024)", "year": 2026, "source": "intuit-2026" },
+    { "id": "ai-spend-up", "label": "SMBs planning to increase AI investment", "value": "71%", "year": 2025, "source": "uschamber-2025" },
+    { "id": "agency-cost", "label": "Median agency app build (Clutch)", "value": "$171,450", "range": "$38K–$171K", "year": 2025, "source": "clutch-2025" },
+    { "id": "agency-time", "label": "Average custom software project length", "value": "~13 months", "year": 2025, "source": "clutch-2025" },
+    { "id": "chaos", "label": "Software projects fully successful (Standish CHAOS)", "value": "~31%", "year": 2020, "source": "standish-2020" },
+    { "id": "toast-arr", "label": "Toast ARR / locations", "value": "$2.4B / 180K", "year": 2026, "source": "toast-q2-2026" },
+    { "id": "owner-arr", "label": "Owner.com ARR (independent restaurants, $249–499/mo)", "value": "$100M+", "year": 2026, "source": "owner-2026" },
+    { "id": "lovable", "label": "Lovable ARR / valuation", "value": "~$600M / $13.3B", "year": 2026, "source": "techcrunch-2026" },
+    { "id": "vibe-abandon", "label": "Vibe-coded projects abandoned before production", "value": "~60%", "year": 2026, "source": "fuzen-2026", "caveat": "community survey, secondary" }
+  ],
+  "vcNorms": [
+    { "id": "safe-cap", "label": "Median post-money SAFE cap, $250K–$1M rounds", "value": "$10M", "year": 2025, "source": "carta-preseed-2025" },
+    { "id": "ai-share", "label": "Share of pre-seed dollars going to AI (H1 2026)", "value": "49%", "year": 2026, "source": "carta-q2-2026" },
+    { "id": "avg-instrument", "label": "Average pre-seed instrument", "value": "$276K", "year": 2026, "source": "carta-q2-2026" },
+    { "id": "safe-share", "label": "Pre-seed rounds using SAFEs", "value": "93%", "year": 2026, "source": "carta-q2-2026" }
+  ],
+  "quotes": [
+    { "text": "The next $1T company will be a software company masquerading as a services firm.", "who": "Julien Bek, Sequoia", "source": "sequoia-2026" },
+    { "text": "If you sell the tool, you're in a race against the model. But if you sell the work, every improvement in the model makes your service faster, cheaper, and harder to compete with.", "who": "Sequoia, 'Services: The New Software'", "source": "sequoia-2026" },
+    { "text": "Customers that were previously too low ACV will suddenly have attractive economics.", "who": "a16z, 'AI Will Eat Application Software'", "source": "a16z-2026" },
+    { "text": "Purpose-built tools that will only ever have one or a small handful of users… software like this is now very easy to build, but still hard to deploy and share.", "who": "YC Request for Startups: A Cloud for Small Software", "source": "yc-rfs" }
+  ],
+  "sources": {
+    "sba-2025": { "title": "SBA Office of Advocacy, 2025 Small Business Profile", "url": "https://advocacy.sba.gov/2025/06/30/new-advocacy-report-shows-the-number-of-small-businesses-in-the-u-s-exceeds-36-million/" },
+    "technomic-2026": { "title": "Technomic via Restaurant Business, independents down 2.3% in 2025", "url": "https://www.restaurantbusinessonline.com/operations/number-independent-restaurants-declined-23-2025" },
+    "census-ec-2022": { "title": "2022 Economic Census, NAICS 459991", "url": "https://www.item.com/naics/459991" },
+    "composite": { "title": "Composite of Census CBP, IBISWorld, Room Escape Artist, USDA Census of Agriculture, The Knot", "url": "https://www.ers.usda.gov/data-products/charts-of-note/chart-detail?chartId=110552" },
+    "mmcg-2025": { "title": "MMCG US fitness industry report 2025", "url": "https://www.mmcginvest.com/post/u-s-fitness-and-gym-industry-report-2025-2030-outlook" },
+    "bls-2025": { "title": "BLS QCEW via Orbital, auto repair establishments", "url": "https://www.withorbital.com/data/how-many-auto-repair-shops-in-the-us/" },
+    "orbital-2026": { "title": "Orbital dental TAM report 2026", "url": "https://www.withorbital.com/data/tam-reports/dental/" },
+    "ibisworld-2025": { "title": "IBISWorld, hair salons in the US", "url": "https://www.ibisworld.com/united-states/number-of-businesses/hair-salons/4410/" },
+    "intuit-2026": { "title": "Intuit QuickBooks AI Impact Report 2026", "url": "https://www.firmofthefuture.com/artificial-intelligence/ai-impact-report-2026/" },
+    "uschamber-2025": { "title": "US Chamber, Empowering Small Business 2025", "url": "https://www.uschamber.com/assets/documents/Empowering-Small-Business-Report-2025.pdf" },
+    "clutch-2025": { "title": "Clutch app development cost study", "url": "https://clutch.co/developers/pricing" },
+    "standish-2020": { "title": "Standish Group CHAOS Report", "url": "https://opencommons.org/CHAOS_Report_on_IT_Project_Outcomes" },
+    "toast-q2-2026": { "title": "Toast Q2 2026 8-K", "url": "https://www.sec.gov/Archives/edgar/data/1650164/000165016426000162/tost-20260630xexhibit991.htm" },
+    "owner-2026": { "title": "Owner.com $100M ARR (founder post) / Restaurant Business", "url": "https://www.restaurantbusinessonline.com/technology/tech-supplier-ownercom-raises-120m-giving-it-1b-valuation" },
+    "techcrunch-2026": { "title": "TechCrunch, Lovable $13.3B valuation", "url": "https://techcrunch.com/2026/08/12/lovable-confirms-new-13-3b-valuation-raises-another-400m/" },
+    "fuzen-2026": { "title": "Fuzen, vibe coding examples 2026 (community survey)", "url": "https://www.fuzen.io/posts/vibe-coding-examples-2026" },
+    "carta-preseed-2025": { "title": "Carta, State of Pre-Seed 2025", "url": "https://carta.com/data/state-of-pre-seed-2025/" },
+    "carta-q2-2026": { "title": "Carta, State of Pre-Seed Q2 2026", "url": "https://carta.com/data/state-of-pre-seed-q2-2026/" },
+    "sequoia-2026": { "title": "Sequoia, Services: The New Software (Mar 2026)", "url": "https://sequoiacap.com/article/services-the-new-software" },
+    "a16z-2026": { "title": "a16z, Good news: AI Will Eat Application Software (Mar 2026)", "url": "https://a16z.com/good-news-ai-will-eat-application-software/" },
+    "yc-rfs": { "title": "Y Combinator, Requests for Startups", "url": "https://www.ycombinator.com/rfs" },
+    "yc-deal": { "title": "Y Combinator, The YC Deal", "url": "https://www.ycombinator.com/deal" },
+    "dora-2025": { "title": "Google DORA 2025, State of AI-assisted Software Development", "url": "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" },
+    "metr-2026": { "title": "METR, Feb 2026 uplift update", "url": "https://metr.org/blog/2026-02-24-uplift-update/" }
+  }
+}
