@@ -5,8 +5,9 @@ import Link from 'next/link'
 import HeroCanvas from '../HeroCanvas'
 import MagneticButton from '../MagneticButton'
 import Hero3DLoader from '../Hero3DLoader'
+import { TYPEWRITER_WORDS } from '@/lib/data/categories'
 
-const WORDS = ['restaurant', 'smoke shop', 'VR arena', 'ranch', 'booking venue', 'small business']
+const WORDS = TYPEWRITER_WORDS
 
 export default function HeroV2() {
   const [wordIndex, setWordIndex] = useState(0)
@@ -60,7 +61,7 @@ export default function HeroV2() {
 
         <ul className="hero-proof">
           <li><b>5</b> apps live</li>
-          <li><b>5</b> verticals</li>
+          <li><b>3</b> categories · <b>14</b> verticals</li>
           <li><b>3–21</b> days to ship</li>
           <li><b>100%</b> code ownership</li>
         </ul>

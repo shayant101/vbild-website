@@ -38,7 +38,9 @@
 .inv-table td:nth-child(2) { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text); }
 .inv-table .inv-th td { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--indigo); padding-top: 1.2rem; background: transparent; }
 .inv-note { font-size: 0.78rem; color: var(--muted); margin-top: 1rem; line-height: 1.6; }
-.inv-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 3rem auto 2rem; max-width: 900px; }
+.inv-tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 3rem auto 2rem; max-width: 1100px; }
+.inv-tier.solo { border-color: rgba(34,197,94,0.45); background: rgba(34,197,94,0.06); }
+.inv-tier.solo small { color: #4ade80; }
 @media (max-width: 700px) { .inv-tiers { grid-template-columns: 1fr; } }
 .inv-tier { background: var(--card); border: 1px solid var(--border2); border-radius: 18px; padding: 1.5rem; text-align: center; display: flex; flex-direction: column; gap: 0.2rem; }
 .inv-tier small { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--indigo); }
@@ -79,3 +81,11 @@
 @media (max-width: 700px) { .inv-sources ol { columns: 1; } }
 .inv-sources li { margin-bottom: 0.3rem; }
 html[data-theme="light"] .inv-q, html[data-theme="light"] .inv-circle, html[data-theme="light"] .inv-tier, html[data-theme="light"] .inv-ask, html[data-theme="light"] .inv-kpis div { background: #fff; }
+
+.inv-funnel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-top: 2rem; align-items: end; }
+@media (max-width: 800px) { .inv-funnel { grid-template-columns: 1fr 1fr; } }
+.inv-funnel-step { background: var(--card); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.15rem; min-height: calc(5.2rem + var(--i) * 0.9rem); justify-content: flex-end; position: relative; }
+.inv-funnel-step::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; border-radius: 14px 14px 0 0; background: linear-gradient(90deg, #22c55e, #6366f1); opacity: calc(0.35 + var(--i) * 0.2); }
+.inv-funnel-step small { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.inv-funnel-step b { font-size: 1rem; }
+.inv-funnel-step span { font-size: 0.78rem; color: var(--muted2); }
