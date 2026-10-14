@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from 'react'
 import type { Spec } from './scenarios'
+import { PlumberApp, LandscaperApp, RealtorApp, SalonApp } from './ProMiniApps'
 
 type Props = { spec: Spec; screen: number; setScreen: (n: number) => void; onToast: (msg: string) => void }
 
@@ -254,6 +255,10 @@ export function MiniApp(props: Props) {
     case 'smokeshop': return <SmokeShopApp {...props} />
     case 'vr': return <VRApp {...props} />
     case 'ranch': return <RanchApp {...props} />
+    case 'plumber': return <PlumberApp {...props} />
+    case 'landscaper': return <LandscaperApp {...props} />
+    case 'realtor': return <RealtorApp {...props} />
+    case 'salon': return <SalonApp {...props} />
     default: return <RestaurantApp {...props} />
   }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { SCENARIOS, SCENARIO_LIST, guessScenario, type Scenario, type ScenarioId, type Spec } from './scenarios'
+import { SCENARIOS, SCENARIO_LIST, SCENARIO_GROUPS, guessScenario, type Scenario, type ScenarioId, type Spec } from './scenarios'
 import { MiniApp } from './MiniApps'
 
 type Phase = 'pick' | 'interview' | 'spec' | 'build' | 'live' | 'outro'
@@ -69,7 +69,7 @@ export default function LiveDemo({ compact = false, autoStart }: Props) {
       if (e.key.toLowerCase() === 'r') restart()
       if (e.key.toLowerCase() === 'a') setAuto((a) => !a)
       if (e.key.toLowerCase() === 'f') rootRef.current?.requestFullscreen?.()
-      if (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4') start(SCENARIO_LIST[Number(e.key) - 1].id)
+      if (/^[1-8]$/.test(e.key)) { const ids = SCENARIO_GROUPS.flatMap((g) => g.ids); const id = ids[Number(e.key) - 1]; if (id) start(id) }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -110,7 +110,7 @@ export default function LiveDemo({ compact = false, autoStart }: Props) {
 
       {!compact && (
         <div className="ld-foot">
-          <span><kbd>→</kbd>/<kbd>space</kbd> next · <kbd>←</kbd> back · <kbd>1–4</kbd> pick business · <kbd>A</kbd> auto · <kbd>R</kbd> restart · <kbd>F</kbd> fullscreen</span>
+          <span><kbd>→</kbd>/<kbd>space</kbd> next · <kbd>←</kbd> back · <kbd>1–8</kbd> pick business · <kbd>A</kbd> auto · <kbd>R</kbd> restart · <kbd>F</kbd> fullscreen</span>
         </div>
       )}
     </div>
@@ -124,14 +124,22 @@ function Pick({ onPick, custom, setCustom, onCustom, liveMode, compact }: { onPi
     <div className="ld-pick">
       <div className="ld-kicker">Live build</div>
       <h2>Pick a business. Watch a working app ship in about a minute.</h2>
-      <div className="ld-cards">
-        {SCENARIO_LIST.map((s, i) => (
-          <button key={s.id} className="ld-card" style={{ ['--acc' as string]: s.accent }} onClick={() => onPick(s.id)}>
-            <span className="ld-card-emoji">{s.emoji}</span>
-            <b>{s.label}</b>
-            <small>{s.bizName}</small>
-            {!compact && <kbd>{i + 1}</kbd>}
-          </button>
+      <div className="ld-groups">
+        {SCENARIO_GROUPS.map((g, gi) => (
+          <div key={g.key} className="ld-group">
+            <div className="ld-group-h"><b>{g.label}</b><span>{g.line}</span></div>
+            <div className="ld-cards">
+              {g.ids.map((id) => { const s = SCENARIOS[id]; const n = SCENARIO_GROUPS.slice(0, gi).reduce((a, x) => a + x.ids.length, 0) + g.ids.indexOf(id) + 1
+                return (
+                  <button key={s.id} className="ld-card" style={{ ['--acc' as string]: s.accent }} onClick={() => onPick(s.id)}>
+                    <span className="ld-card-emoji">{s.emoji}</span>
+                    <b>{s.label}</b>
+                    <small>{s.bizName}</small>
+                    {!compact && <kbd>{n}</kbd>}
+                  </button>
+                ) })}
+            </div>
+          </div>
         ))}
       </div>
       <form className="ld-custom" onSubmit={(e) => { e.preventDefault(); if (custom.trim()) onCustom() }}>

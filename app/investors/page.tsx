@@ -94,7 +94,7 @@ export default function InvestorsPage() {
               </div>
             </FadeIn>
             <div className="inv-tss">
-              <FadeIn><div className="inv-circle tam"><small>TAM</small><b>{money(t.tam.value)}</b><span>{t.tam.label}</span><em>{num(t.tam.businesses)} businesses · {money(t.tam.upper)} {t.tam.upperLabel}</em></div></FadeIn>
+              <FadeIn><div className="inv-circle tam"><small>TAM</small><b>{money(t.tam.value)}</b><span>{t.tam.label}</span><em>{num(t.tam.businesses)} businesses · Places + Venues · {money(market.tamSamSom.combined.tam)} combined with Pros</em></div></FadeIn>
               <FadeIn delay={80}><div className="inv-circle sam"><small>SAM</small><b>{money(t.sam.value)}</b><span>{t.sam.label}</span><em>{num(t.sam.businesses)} businesses · up to {money(t.sam.upper)} unfiltered</em></div></FadeIn>
               <FadeIn delay={160}><div className="inv-circle som"><small>SOM · year 3</small><b>{money(t.som[1].revenue)}</b><span>{t.som[1].customers} customers at ${num(t.som[1].acv)} ACV (base case)</span><em>{money(t.som[0].revenue)} conservative · {money(t.som[2].revenue)} aggressive</em></div></FadeIn>
             </div>
@@ -115,6 +115,45 @@ export default function InvestorsPage() {
           </div>
         </section>
 
+
+        {/* pros category + Square playbook */}
+        <section className="inv-section">
+          <div className="container">
+            <FadeIn>
+              <div className="text-center">
+                <span className="section-label">New in Oct 2026 · the Pros category</span>
+                <h2 className="section-title">Three categories, one way of building.</h2>
+                <p className="section-sub">Places (counter), Pros (calendar), Venues (door). Pros adds the trades, landscapers, remodelers, real estate teams, cleaners and salons: a {money(market.prosMarket.reachable[1].tam)} base-case TAM on its own, taking Vbild&apos;s combined US TAM to {money(market.tamSamSom.combined.tam)}.</p>
+              </div>
+            </FadeIn>
+            <FadeIn delay={100}>
+              <div className="inv-table-wrap" style={{ marginTop: '2.5rem' }}>
+                <table className="inv-table">
+                  <thead><tr><th>#</th><th>Pros sub-vertical</th><th>US businesses</th><th>Employer firms</th><th>Willingness to pay $99–$499/mo</th></tr></thead>
+                  <tbody>
+                    {market.prosMarket.subs.map((r) => <tr key={r.id}><td>{r.rank}</td><td>{r.label}</td><td>{num(r.total)}</td><td>{r.employer ? num(r.employer) : '—'}</td><td>{r.wtp}</td></tr>)}
+                  </tbody>
+                </table>
+                <p className="inv-note">{market.prosMarket.note} Reachable: {num(market.prosMarket.reachable[0].total)} / {num(market.prosMarket.reachable[1].total)} / {num(market.prosMarket.reachable[2].total)} businesses (conservative / base / aggressive) → {money(market.prosMarket.reachable[0].tam)} / {money(market.prosMarket.reachable[1].tam)} / {money(market.prosMarket.reachable[2].tam)} at ${num(t.acv)} ACV. {market.prosMarket.assumptions}</p>
+              </div>
+            </FadeIn>
+            <FadeIn delay={160}>
+              <div className="inv-model-notes" style={{ marginTop: '2rem' }}>
+                <div><h4>Why lead with the trades</h4><p>Plumbing, HVAC and electrical have the lowest solo share (62–66%) and the highest receipts; quoting, dispatch and invoicing justify a custom app. Beauty is 90% booth renters that Square, GlossGenius and Booksy already serve at $0–$50/mo, so it sits in the category, not at the front of it.</p></div>
+                <div><h4>The gap incumbents leave open</h4><p>Jobber and Housecall Pro gate automations, two-way SMS and client portals behind {market.prosMarket.signals[5].value} tiers; pros also pay {market.prosMarket.signals[4].value} per lead to Thumbtack and Angi for leads sold to 4–8 competitors. Realtors: {market.prosMarket.signals[0].value} already spend ≥$250/mo on tech.</p></div>
+                <div><h4>The Square playbook, applied</h4><p>Square reached {market.square.sellers} sellers and {market.square.gpv} GPV by giving micro-merchants a near-free wedge (the reader), flat legible pricing, then vertical bundles. <b>Solo</b> is Vbild&apos;s reader: $0 setup, $29/mo, live in five minutes, and the $3,500–$25,000 custom build is the upsell. Square&apos;s own Oct 2025 plan simplification &ldquo;nearly doubled&rdquo; software attach.</p></div>
+              </div>
+            </FadeIn>
+            <FadeIn delay={220}>
+              <div className="inv-funnel">
+                {[['Solo', '$0 + $29/mo', 'self-serve, 5 minutes'], ['Starter', '$3.5K + $99–199/mo', 'single-focus build'], ['Growth', '$8K + $299/mo', 'multi-feature + dashboard'], ['Pro', '$25K + $499/mo', 'platform + agents']].map(([n, p, d], i) => (
+                  <div key={n} className="inv-funnel-step" style={{ ['--i' as string]: i }}><small>{n}</small><b>{p}</b><span>{d}</span></div>
+                ))}
+              </div>
+            </FadeIn>
+          </div>
+        </section>
+
         {/* model */}
         <section className="inv-section">
           <div className="container">
@@ -125,16 +164,18 @@ export default function InvestorsPage() {
               </div>
             </FadeIn>
             <div className="inv-tiers">
-              {market.company.pricing.map((p, i) => (
+              {market.company.pricing.map((p, i) => {
+                const acv = ({ Solo: 348, Starter: market.company.acv.starter, Growth: market.company.acv.growth, Pro: market.company.acv.pro } as Record<string, number>)[p.tier]
+                return (
                 <FadeIn key={p.tier} delay={i * 80}>
-                  <div className="inv-tier">
-                    <small>{p.tier}</small>
-                    <b>${num(p.setup)}</b>
+                  <div className={`inv-tier${p.tier === 'Solo' ? ' solo' : ''}`}>
+                    <small>{p.tier}{p.tier === 'Solo' && ' · self-serve wedge'}</small>
+                    <b>{p.setup === 0 ? '$0' : `$${num(p.setup)}`}</b>
                     <span>+ ${p.monthlyLow === p.monthlyHigh ? p.monthlyLow : `${p.monthlyLow}–${p.monthlyHigh}`}/mo</span>
-                    <em>ACV ≈ ${num([market.company.acv.starter, market.company.acv.growth, market.company.acv.pro][i])}</em>
+                    <em>{p.tier === 'Solo' ? 'ACV ≈ $348 + payments' : `ACV ≈ $${num(acv)}`}</em>
                   </div>
                 </FadeIn>
-              ))}
+              )})}
             </div>
             <FadeIn delay={200}>
               <div className="inv-model-notes">
