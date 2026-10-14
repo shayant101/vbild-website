@@ -15,6 +15,14 @@
 
 Investor deck: `investor-materials/Vbild-PreSeed-Deck.pptx` (+ PDF, + the generator script). 16 slides, every market figure cited; company metrics you must confirm are tagged **VERIFY** in yellow.
 
+## Added Oct 13 — Places · Pros · Venues
+- Site-wide taxonomy in `lib/data/categories.ts` (labels, lines, six jobs, sub-verticals, tiers). Change wording there and it flows to the homepage, `/for/places`, `/for/pros`, `/for/venues`, pricing and the demo picker.
+- `/demo` now has 8 scenarios grouped by category (keys 1–8). New: plumber, landscaper, realtor, salon — each with its own interactive prototype.
+- **Solo** ($0 + $29/mo, self-serve) is now the first pricing tier on the site and in the deck. It is a product promise — nothing is built behind it yet. Its CTA points to `/for/pros#demo`. Decide before merging to `main` whether to keep it visible or label it "coming soon".
+- `/investors` and the deck (now 19 slides) carry the Pros market (ranked table, $4.0B base TAM, $8.4B combined), the Square playbook, and the Solo→Starter→Growth→Pro funnel. Research: `docs/research/PROS-CATEGORY.md`.
+- Category images: `public/categories/*.jpg` (Higgsfield). Replace with real photos whenever you have them; same filenames.
+- Naming note: the category is "Pros" and the top tier is "Pro". Copy avoids putting them in the same sentence; rename the tier (e.g. "Platform") if it ever confuses a customer.
+
 ## Before anything goes external — 3 things only you can do
 
 1. **Vercel env vars** (Project → Settings → Environment Variables; add to Production *and* Preview):
