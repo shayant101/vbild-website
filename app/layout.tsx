@@ -26,17 +26,20 @@ export const metadata: Metadata = {
   title: 'Vbild — The App Platform for Small Businesses',
   description: 'Vbild builds AI-powered apps for small businesses — restaurants, smoke shops, gaming venues, and more. Custom apps in days, not months.',
   metadataBase: new URL('https://vbild.ai'),
+  icons: { icon: '/icon.svg', apple: '/apple-icon.png' },
   openGraph: {
     title: 'Vbild — The App Platform for Small Businesses',
     description: 'Custom AI-powered apps for SMBs. Built in days, not months.',
     url: 'https://vbild.ai',
     siteName: 'Vbild',
     type: 'website',
+    images: [{ url: '/brand/og.png', width: 1200, height: 630, alt: 'Vbild — custom apps for small businesses' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Vbild — The App Platform for Small Businesses',
     description: 'Custom AI-powered apps for SMBs. Built in days, not months.',
+    images: ['/brand/og.png'],
   },
 }
 

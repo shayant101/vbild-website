@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
+import Logo from './Logo'
 
 const NAV_LINKS = [
   { label: 'Scan', href: '/scan' },
@@ -25,7 +26,7 @@ export default function NavBar() {
   return (
     <>
       <nav className={scrolled ? 'scrolled' : ''}>
-        <span className="nav-logo">Vbild</span>
+        <Logo size={30} />
         <ul className="nav-links">
           {NAV_LINKS.map((l) => (
             <li key={l.href}>

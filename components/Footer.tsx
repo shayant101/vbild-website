@@ -1,9 +1,10 @@
 import Link from 'next/link'
+import Logo from './Logo'
 
 export default function Footer() {
   return (
     <footer>
-      <span className="footer-logo">Vbild</span>
+      <Logo size={24} />
       <p>© 2026 Vbild Inc. · Building apps for the businesses that make the world run.</p>
       <ul className="footer-links">
         <li><Link href="/demo">Demo</Link></li>

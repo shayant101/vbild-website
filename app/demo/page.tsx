@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import LiveDemo from '@/components/demo/LiveDemo'
+import Logo from '@/components/Logo'
 
 export const metadata: Metadata = {
   title: 'Live demo — Vbild builds a business app in about a minute',
@@ -12,7 +13,7 @@ export default function DemoPage() {
   return (
     <div className="demo-page">
       <header className="demo-head">
-        <Link href="/" className="demo-logo">Vbild</Link>
+        <Logo size={26} />
         <span className="demo-head-mid">Live build demo</span>
         <Link href="/" className="demo-back">← vbild.ai</Link>
       </header>

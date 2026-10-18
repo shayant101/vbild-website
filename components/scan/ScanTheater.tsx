@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Fact } from '@/lib/scan/types'
+import { Mark } from '@/components/Logo'
 
 type Pub = { id: string; status: string; score?: number; report?: { businessName: string; categoryId: string; subVertical: string; prototype: { appName: string } }; facts: Fact[]; business?: { name: string; rating?: number; reviewCount?: number; address?: string; website?: string } }
 
@@ -89,7 +90,7 @@ export default function ScanTheater({ input, onDone, onError }: { input: string;
     <div className="th" role="status" aria-live="polite">
       <div className="th-card">
         <aside className="th-stages">
-          <div className="th-brand">Vbild <span>Scan</span></div>
+          <div className="th-brand"><Mark size={22} /> Vbild <span>Scan</span></div>
           {STAGES.map((s, i) => (
             <div key={s.id} className={`th-stage${i < stageIdx ? ' done' : i === stageIdx ? ' on' : ''}`}>
               <i>{i < stageIdx ? '✓' : i === stageIdx ? '' : ''}</i><span>{s.label}</span>
