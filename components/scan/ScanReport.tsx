@@ -17,9 +17,18 @@ export default function ScanReport({ id }: { id: string }) {
   const [err, setErr] = useState<string | null>(null)
   const [screen, setScreen] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
-  const load = useCallback(async () => { const r = await fetch(`/api/scan/${id}`, { cache: 'no-store' }); if (r.ok) setD(await r.json()) }, [id])
+  const [missing, setMissing] = useState(false)
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/scan/${id}`, { cache: 'no-store' })
+      if (r.ok) { const j = await r.json(); setD(j); try { sessionStorage.setItem(`vbild-scan-${id}`, JSON.stringify(j)) } catch {} ; return }
+    } catch { /* fall through */ }
+    try { const cached = sessionStorage.getItem(`vbild-scan-${id}`); if (cached) { setD(JSON.parse(cached)); return } } catch {}
+    setMissing(true)
+  }, [id])
   useEffect(() => { load() }, [load])
 
+  if (missing) return <div className="sr-loading">This report has expired or the link is wrong. <Link href="/scan">Run a new scan →</Link></div>
   if (!d) return <div className="sr-loading"><i className="sb-spin" /> Loading your report…</div>
   if (d.status === 'error' || !d.report) return <div className="sr-loading">We couldn&apos;t complete this scan{d.error ? `: ${d.error}` : ''}. <Link href="/scan">Try another link →</Link></div>
   const r = d.report
@@ -33,10 +42,12 @@ export default function ScanReport({ id }: { id: string }) {
 
   async function unlock(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setErr(null)
-    const r2 = await fetch(`/api/scan/${id}/lead`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(form) })
+    const r2 = await fetch(`/api/scan/${id}/lead`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...form, scan: d }) })
     const j = await r2.json().catch(() => ({}))
-    if (!r2.ok) { setErr(j.error || 'Could not save'); setBusy(false); return }
-    await load(); setBusy(false)
+    if (!r2.ok && r2.status !== 404) { setErr(j.error || 'Could not save'); setBusy(false); return }
+    if (j.scan) { setD(j.scan); try { sessionStorage.setItem(`vbild-scan-${id}`, JSON.stringify(j.scan)) } catch {} }
+    else await load()
+    setBusy(false)
   }
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2200) }
 

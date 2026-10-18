@@ -21,6 +21,7 @@ export default function ScanBox({ size = 'hero', placeholder }: { size?: 'hero' 
       const r = await fetch('/api/scan', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ input }) })
       const d = await r.json().catch(() => ({}))
       if (!r.ok) { setErr(d.error || 'Scan failed. Try the website URL instead.'); setBusy(false); clearInterval(tick); return }
+      try { if (d.scan) sessionStorage.setItem(`vbild-scan-${d.id}`, JSON.stringify(d.scan)) } catch {}
       router.push(`/scan/${d.id}`)
     } catch { setErr('Network error. Try again.'); setBusy(false); clearInterval(tick) }
   }

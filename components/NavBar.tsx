@@ -8,7 +8,6 @@ const NAV_LINKS = [
   { label: 'Scan', href: '/scan' },
   { label: 'Demo', href: '/#demo' },
   { label: 'Work', href: '/#portfolio' },
-  { label: 'How it works', href: '/#how' },
   { label: 'Pricing', href: '/#pricing' },
   { label: 'Investors', href: '/investors' },
 ]
@@ -36,10 +35,6 @@ export default function NavBar() {
         </ul>
         <div className="nav-right">
           <ThemeToggle />
-          <Link href="/new-world" className="nav-new-world">
-            <span className="nav-nw-dot" />
-            New World
-          </Link>
           <a href="https://cal.com/shayan-vbild/discovery-call" className="nav-cta" target="_blank" rel="noreferrer">Book a call</a>
         </div>
         <button

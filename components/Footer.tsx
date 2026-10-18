@@ -7,6 +7,7 @@ export default function Footer() {
       <p>© 2026 Vbild Inc. · Building apps for the businesses that make the world run.</p>
       <ul className="footer-links">
         <li><Link href="/demo">Demo</Link></li>
+        <li><Link href="/new-world">New World</Link></li>
         <li><Link href="/#portfolio">Work</Link></li>
         <li><Link href="/#pricing">Pricing</Link></li>
         <li><Link href="/investors">Investors</Link></li>
