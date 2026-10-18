@@ -6,6 +6,7 @@ import HeroCanvas from '../HeroCanvas'
 import MagneticButton from '../MagneticButton'
 import Hero3DLoader from '../Hero3DLoader'
 import { TYPEWRITER_WORDS } from '@/lib/data/categories'
+import ScanBox from '@/components/scan/ScanBox'
 
 const WORDS = TYPEWRITER_WORDS
 
@@ -44,13 +45,13 @@ export default function HeroV2() {
         </h1>
 
         <p className="hero-sub">
-          We interview the owner, write the spec, and ship a working app you own — the kind agencies quote
-          $38K–$171K and a year for — from $3,500 plus a simple monthly.
+          Paste your Google Business Profile or website. In 30 seconds you&apos;ll see what to automate, what we&apos;d build, and a prototype with your name on it.
         </p>
 
-        <div className="hero-actions">
-          <MagneticButton href="#demo" className="btn-primary">▶ Watch a 60-second build</MagneticButton>
-          <MagneticButton href="https://cal.com/shayan-vbild/discovery-call" className="btn-ghost">Book a build call</MagneticButton>
+        <div className="hero-scan"><ScanBox placeholder="Google Maps link, website, or business name" /></div>
+
+        <div className="hero-actions" style={{ marginTop: '1.4rem' }}>
+          <MagneticButton href="#demo" className="btn-ghost">▶ Or watch a 60-second build</MagneticButton>
         </div>
 
         <Link href="/new-world" className="hero-new-world-link">

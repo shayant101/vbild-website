@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 
 const NAV_LINKS = [
+  { label: 'Scan', href: '/scan' },
   { label: 'Demo', href: '/#demo' },
   { label: 'Work', href: '/#portfolio' },
   { label: 'How it works', href: '/#how' },

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 
 const ITEMS = [
   { href: '/admin', label: 'Overview', ico: '◫' },
+  { href: '/admin/leads', label: 'Leads & scans', ico: '◉' },
   { href: '/admin/projects', label: 'Projects', ico: '▣' },
   { href: '/admin/agents', label: 'Agents stream', ico: '⚡' },
   { href: '/admin/investors', label: 'Investor room', ico: '◆' },
