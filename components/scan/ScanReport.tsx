@@ -17,6 +17,8 @@ export default function ScanReport({ id }: { id: string }) {
   const [err, setErr] = useState<string | null>(null)
   const [screen, setScreen] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
+  const [reveal, setReveal] = useState(false)
+  const [shown, setShown] = useState(0)
   const [missing, setMissing] = useState(false)
   const load = useCallback(async () => {
     try {
@@ -27,6 +29,17 @@ export default function ScanReport({ id }: { id: string }) {
     setMissing(true)
   }, [id])
   useEffect(() => { load() }, [load])
+  // reveal: score counts up, sections stagger in (only right after a fresh scan)
+  useEffect(() => {
+    if (!d?.report) return
+    let fresh = false
+    try { fresh = sessionStorage.getItem('vbild-scan-reveal') === id; if (fresh) sessionStorage.removeItem('vbild-scan-reveal') } catch {}
+    const target = d.report.scores.overall
+    if (!fresh) { setShown(target); setReveal(true); return }
+    const t0 = performance.now(); const dur = 1600
+    const tick = (now: number) => { const p = Math.min(1, (now - t0) / dur); const e = 1 - Math.pow(1 - p, 3); setShown(Math.round(target * e)); if (p < 1) requestAnimationFrame(tick); else setReveal(true) }
+    requestAnimationFrame(tick)
+  }, [d, id])
 
   if (missing) return <div className="sr-loading">This report has expired or the link is wrong. <Link href="/scan">Run a new scan →</Link></div>
   if (!d) return <div className="sr-loading"><i className="sb-spin" /> Loading your report…</div>
@@ -52,7 +65,7 @@ export default function ScanReport({ id }: { id: string }) {
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2200) }
 
   return (
-    <div className="sr" style={{ ['--acc' as string]: cat.accent }}>
+    <div className={`sr${reveal ? ' sr-revealed' : ' sr-revealing'}`} style={{ ['--acc' as string]: cat.accent }}>
       {/* header */}
       <header className="sr-head">
         <div>
@@ -61,7 +74,7 @@ export default function ScanReport({ id }: { id: string }) {
           <p className="sr-sum">{r.summary}</p>
           {d.business && <p className="sr-biz">{d.business.name}{d.business.rating ? ` · ${d.business.rating.toFixed(1)}★ (${d.business.reviewCount})` : ''}{d.business.address ? ` · ${d.business.address}` : ''} {d.business.mapsUrl && <a href={d.business.mapsUrl} target="_blank" rel="noreferrer">Maps ↗</a>}</p>}
         </div>
-        <div className="sr-score"><div className="sr-ring" style={{ background: ring(S.overall) }}><b>{S.overall}</b><small>/100</small></div><span>App-readiness</span></div>
+        <div className="sr-score"><div className="sr-ring" style={{ background: ring(shown) }}><b>{shown}</b><small>/100</small></div><span>App-readiness</span></div>
       </header>
 
       {/* area scores */}
