@@ -3,6 +3,9 @@ import { Inter, Space_Grotesk } from 'next/font/google'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
+import './v2.css'
+import './demo/demo.css'
+import './scan/scan.css'
 import CursorLoader from '@/components/CursorLoader'
 
 const inter = Inter({
