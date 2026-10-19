@@ -303,7 +303,11 @@ export default function Hero3DObject() {
       const clk = new THREE.Clock()
       const dum = new THREE.Object3D()
 
+      let visible3d = true
+      const io3d = new IntersectionObserver(([e]) => { const was = visible3d; visible3d = e.isIntersecting; if (visible3d && !was) raf = requestAnimationFrame(animate) }, { threshold: 0.02 })
+      io3d.observe(container)
       const animate = () => {
+        if (!visible3d) return
         raf = requestAnimationFrame(animate)
         const t = clk.getElapsedTime()
 
@@ -502,7 +506,7 @@ export default function Hero3DObject() {
       window.addEventListener('resize', onResize)
 
       cleanup = () => {
-        cancelAnimationFrame(raf)
+        io3d.disconnect(); cancelAnimationFrame(raf)
         window.removeEventListener('mousemove', onMouseMove)
         window.removeEventListener('resize', onResize)
         cardEl?.removeEventListener('mouseenter', onCardEnter)

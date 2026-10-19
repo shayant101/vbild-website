@@ -144,3 +144,7 @@ html[data-theme="light"] .cat-card, html[data-theme="light"] .job-card, html[dat
 footer .logo-word { font-size: 1.2rem; }
 .th-brand { display: flex; align-items: center; gap: 0.45rem; }
 .admin-logo svg { margin-right: 0.1rem; }
+
+/* how-it-works: equal-height cards */
+.steps-wrap > * { height: 100%; }
+.steps-wrap .step-card { height: 100%; }

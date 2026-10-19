@@ -533,7 +533,9 @@ section { padding: 110px 6%; }
 
 /* ── HOW IT WORKS ── */
 #how { background: var(--bg); }
-.steps-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 2rem; margin-top: 4rem; position: relative; }
+.steps-wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.4rem; margin-top: 4rem; position: relative; align-items: stretch; }
+@media (max-width: 1080px) { .steps-wrap { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .steps-wrap { grid-template-columns: 1fr; } }
 .step-card {
   padding: 2.2rem; background: var(--card); border: 1px solid var(--border2);
   border-radius: 20px; position: relative;
@@ -661,17 +663,19 @@ footer p { color: var(--muted); font-size: 0.78rem; }
 /* ── CUSTOM CURSOR v2 — precise core, adaptive halo ── */
 @media (pointer: fine) { html.cur-on, html.cur-on *, html.cur-on *::before, html.cur-on *::after { cursor: none !important; } }
 .cur { pointer-events: none; }
-.cur-spot { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+.cur-spot { position: fixed; top: 0; left: 0; width: 1300px; height: 1300px; pointer-events: none; z-index: 1; border-radius: 50%; will-change: transform;
+  background: radial-gradient(circle, rgba(99,102,241,0.08), rgba(168,85,247,0.03) 40%, transparent 70%); }
 .cur-core {
   position: fixed; top: -4px; left: -4px; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; z-index: 10000;
   background: #fff; box-shadow: 0 0 0 1.5px rgba(6,6,14,0.9), 0 0 0 3px rgba(255,255,255,0.35), 0 0 14px rgba(99,102,241,0.9);
-  transition: transform 0.08s ease-out; will-change: transform;
+  will-change: transform;
 }
+.cur-core--down { width: 6px; height: 6px; top: -3px; left: -3px; }
 html[data-theme="light"] .cur-core { background: #0b0b17; box-shadow: 0 0 0 1.5px rgba(255,255,255,0.95), 0 0 0 3px rgba(11,11,23,0.25), 0 0 14px rgba(99,102,241,0.6); }
 .cur-ring {
   position: fixed; top: 0; left: 0; width: 22px; height: 22px; border-radius: 11px; pointer-events: none; z-index: 9999;
   border: 1.5px solid rgba(165,180,252,0.75); background: rgba(99,102,241,0.06);
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.25s, opacity 0.2s; will-change: transform, width, height, border-radius;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.25s, opacity 0.2s; will-change: transform; contain: strict;
 }
 .cur-ring--snap { border-color: rgba(168,85,247,0.9); background: rgba(99,102,241,0.12); box-shadow: 0 0 0 1px rgba(168,85,247,0.25), 0 0 24px rgba(99,102,241,0.35), inset 0 0 18px rgba(99,102,241,0.12); }
 .cur-ring--text { border-color: rgba(165,180,252,0.9); background: rgba(165,180,252,0.9); box-shadow: 0 0 8px rgba(99,102,241,0.6); }

@@ -42,7 +42,7 @@ export default function HeroCanvas() {
       W = canvas!.width = canvas!.offsetWidth
       H = canvas!.height = canvas!.offsetHeight
       startTime = performance.now()
-      const n = Math.min(140, Math.floor((W * H) / 6500))
+      const n = Math.min(104, Math.floor((W * H) / 8800))
       // Shuffle indices so dots don't appear in a top-left → bottom-right sweep
       const indices = Array.from({ length: n }, (_, i) => i)
       for (let i = indices.length - 1; i > 0; i--) {
@@ -104,7 +104,8 @@ export default function HeroCanvas() {
         ctx!.fill()
       }
 
-      // Particle-to-particle connection lines (only between visible dots)
+      // Particle-to-particle connection lines — bucketed by alpha into 4 batched paths (1 stroke each instead of hundreds)
+      const buckets: [number[], number][] = [[[], 0.045], [[], 0.09], [[], 0.135], [[], 0.18]]
       for (let i = 0; i < particles.length; i++) {
         const ai = liveAlpha(particles[i])
         if (ai <= 0) continue
@@ -113,18 +114,23 @@ export default function HeroCanvas() {
           if (aj <= 0) continue
           const dx = particles[i].x - particles[j].x
           const dy = particles[i].y - particles[j].y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 120) {
-            // Line alpha also gated by how visible both endpoints are
+          const d2 = dx * dx + dy * dy
+          if (d2 < 14400) {
+            const dist = Math.sqrt(d2)
             const visibility = Math.min(ai / particles[i].alpha, aj / particles[j].alpha)
-            ctx!.beginPath()
-            ctx!.strokeStyle = `hsla(246,85%,70%,${(1 - dist / 120) * 0.18 * visibility})`
-            ctx!.lineWidth = 0.6
-            ctx!.moveTo(particles[i].x, particles[i].y)
-            ctx!.lineTo(particles[j].x, particles[j].y)
-            ctx!.stroke()
+            const a = (1 - dist / 120) * 0.18 * visibility
+            const b = buckets[Math.min(3, Math.floor(a / 0.045))][0]
+            b.push(particles[i].x, particles[i].y, particles[j].x, particles[j].y)
           }
         }
+      }
+      ctx!.lineWidth = 0.6
+      for (const [pts, a] of buckets) {
+        if (!pts.length) continue
+        ctx!.beginPath()
+        for (let k = 0; k < pts.length; k += 4) { ctx!.moveTo(pts[k], pts[k + 1]); ctx!.lineTo(pts[k + 2], pts[k + 3]) }
+        ctx!.strokeStyle = `hsla(246,85%,70%,${a})`
+        ctx!.stroke()
       }
 
       // Particles — with cursor repulsion
@@ -155,8 +161,12 @@ export default function HeroCanvas() {
         ctx!.fill()
       }
 
-      animId = requestAnimationFrame(draw)
+      if (visible) animId = requestAnimationFrame(draw)
     }
+
+    let visible = true
+    const io = new IntersectionObserver(([e]) => { const was = visible; visible = e.isIntersecting; if (visible && !was) draw() }, { threshold: 0.02 })
+    io.observe(canvas!)
 
     init()
     draw()
@@ -184,6 +194,7 @@ export default function HeroCanvas() {
     window.addEventListener('mousemove', onMouseMove)
 
     return () => {
+      io.disconnect()
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', onResize)
       window.removeEventListener('mousemove', onMouseMove)

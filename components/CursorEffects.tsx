@@ -32,7 +32,7 @@ export default function CursorEffects() {
     let tx = -100, ty = -100, tw = 22, th = 22, tr = 11      // ring target
     let target: Element | null = null
     let mode: 'roam' | 'snap' | 'text' | 'hidden' = 'roam'
-    let speed = 0, raf = 0, down = false
+    let speed = 0, raf = 0, down = false, frame = 0, lw = -1, lh = -1, lr = -1
     const hist: { x: number; y: number }[] = []
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -64,27 +64,29 @@ export default function CursorEffects() {
     }
 
     function tick() {
-      measure()
+      frame++
+      if (mode !== 'snap' || frame % 3 === 0) measure()
       const k = mode === 'snap' ? 0.28 : 0.45
       rx = lerp(rx, tx, k); ry = lerp(ry, ty, k); rw = lerp(rw, tw, 0.3); rh = lerp(rh, th, 0.3); rr = lerp(rr, tr, 0.3)
-      ring.style.transform = `translate(${rx - rw / 2}px, ${ry - rh / 2}px)`
-      ring.style.width = `${rw}px`; ring.style.height = `${rh}px`; ring.style.borderRadius = `${rr}px`
-      core.style.transform = `translate(${mx}px, ${my}px) scale(${down ? 0.7 : 1})`
-      spot.style.background = `radial-gradient(650px circle at ${mx}px ${my}px, rgba(99,102,241,0.08), rgba(168,85,247,0.03) 40%, transparent 70%)`
+      ring.style.transform = `translate3d(${rx - rw / 2}px, ${ry - rh / 2}px, 0)`
+      if (Math.abs(rw - lw) > 0.4 || Math.abs(rh - lh) > 0.4) { ring.style.width = `${rw}px`; ring.style.height = `${rh}px`; lw = rw; lh = rh }
+      if (Math.abs(rr - lr) > 0.4) { ring.style.borderRadius = `${rr}px`; lr = rr }
+      core.style.transform = `translate3d(${mx}px, ${my}px, 0)`
+      spot.style.transform = `translate3d(${mx - 650}px, ${my - 650}px, 0)`
       // comet trail — only when moving fast
       speed = lerp(speed, Math.hypot(mx - px, my - py), 0.4); px = mx; py = my
       hist.unshift({ x: mx, y: my }); if (hist.length > TRAIL_N * 3) hist.pop()
       const show = !reduced && speed > 9 && mode === 'roam'
-      trail.forEach((t, i) => { const h = hist[(i + 1) * 3]; if (!h || !show) { t.style.opacity = '0'; return } const f = 1 - i / TRAIL_N; t.style.opacity = String(0.55 * f); t.style.transform = `translate(${h.x}px, ${h.y}px) scale(${0.3 + 0.7 * f})` })
+      trail.forEach((t, i) => { const h = hist[(i + 1) * 3]; if (!h || !show) { if (t.style.opacity !== '0') t.style.opacity = '0'; return } const f = 1 - i / TRAIL_N; t.style.opacity = String(0.55 * f); t.style.transform = `translate3d(${h.x}px, ${h.y}px, 0) scale(${0.3 + 0.7 * f})` })
       raf = requestAnimationFrame(tick)
     }
 
     const onMove = (e: MouseEvent) => { mx = e.clientX; my = e.clientY; if (mode === 'hidden') { mode = 'roam'; root.classList.remove('cur-hidden') } }
     const onOver = (e: MouseEvent) => { const el = (e.target as Element).closest(INTERACTIVE) || (e.target as Element).closest(TEXTY); setTarget(el) }
     const onOut = (e: MouseEvent) => { if (!e.relatedTarget) { mode = 'hidden'; root.classList.add('cur-hidden'); target = null } }
-    const onDown = () => { down = true }
+    const onDown = () => { down = true; core.classList.add('cur-core--down') }
     const onUp = (e: MouseEvent) => {
-      down = false
+      down = false; core.classList.remove('cur-core--down')
       if (reduced) return
       const r = document.createElement('div'); r.className = 'cur-ripple'; r.style.left = `${e.clientX}px`; r.style.top = `${e.clientY}px`; root.appendChild(r); setTimeout(() => r.remove(), 650)
     }
@@ -95,8 +97,11 @@ export default function CursorEffects() {
     document.addEventListener('mouseout', onOut)
     window.addEventListener('mousedown', onDown); window.addEventListener('mouseup', onUp)
     window.addEventListener('scroll', onScroll, { passive: true })
+    const onVis = () => { if (document.hidden) cancelAnimationFrame(raf); else raf = requestAnimationFrame(tick) }
+    document.addEventListener('visibilitychange', onVis)
     raf = requestAnimationFrame(tick)
     return () => {
+      document.removeEventListener('visibilitychange', onVis)
       window.removeEventListener('mousemove', onMove); document.removeEventListener('mouseover', onOver); document.removeEventListener('mouseout', onOut)
       window.removeEventListener('mousedown', onDown); window.removeEventListener('mouseup', onUp); window.removeEventListener('scroll', onScroll)
       cancelAnimationFrame(raf); document.documentElement.classList.remove('cur-on')
