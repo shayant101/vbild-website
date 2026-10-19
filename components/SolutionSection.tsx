@@ -45,8 +45,7 @@ export default function SolutionSection() {
                 <li>
                   <span className="sol-check">✓</span>
                   <p>
-                    <strong>Priced like SaaS, not agencies</strong> — starting at $3,500 build + a
-                    simple monthly. No $100K surprise invoices.
+                    <strong>Priced like SaaS, not agencies</strong> — start free on Solo, custom builds from $479, and the growth plans include the marketing that lifts revenue.
                   </p>
                 </li>
                 <li>

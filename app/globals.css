@@ -658,25 +658,29 @@ footer p { color: var(--muted); font-size: 0.78rem; }
   footer { flex-direction: column; text-align: center; }
 }
 
-/* ── CUSTOM CURSOR + SPOTLIGHT ── */
-@media (pointer: fine) {
-  *, *::before, *::after { cursor: none !important; }
+/* ── CUSTOM CURSOR v2 — precise core, adaptive halo ── */
+@media (pointer: fine) { html.cur-on, html.cur-on *, html.cur-on *::before, html.cur-on *::after { cursor: none !important; } }
+.cur { pointer-events: none; }
+.cur-spot { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+.cur-core {
+  position: fixed; top: -4px; left: -4px; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; z-index: 10000;
+  background: #fff; box-shadow: 0 0 0 1.5px rgba(6,6,14,0.9), 0 0 0 3px rgba(255,255,255,0.35), 0 0 14px rgba(99,102,241,0.9);
+  transition: transform 0.08s ease-out; will-change: transform;
 }
-.cursor-spotlight { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
-.cursor-dot {
-  position: fixed; top: 0; left: 0; width: 8px; height: 8px;
-  background: var(--indigo); border-radius: 50%; pointer-events: none; z-index: 9999;
-  box-shadow: 0 0 12px rgba(99,102,241,0.9), 0 0 4px rgba(99,102,241,0.6);
-  will-change: transform; transition: width 0.2s, height 0.2s, background 0.2s;
+html[data-theme="light"] .cur-core { background: #0b0b17; box-shadow: 0 0 0 1.5px rgba(255,255,255,0.95), 0 0 0 3px rgba(11,11,23,0.25), 0 0 14px rgba(99,102,241,0.6); }
+.cur-ring {
+  position: fixed; top: 0; left: 0; width: 22px; height: 22px; border-radius: 11px; pointer-events: none; z-index: 9999;
+  border: 1.5px solid rgba(165,180,252,0.75); background: rgba(99,102,241,0.06);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.25s, opacity 0.2s; will-change: transform, width, height, border-radius;
 }
-.cursor-dot--hover { width: 6px; height: 6px; background: var(--purple); }
-.cursor-ring {
-  position: fixed; top: 0; left: 0; width: 44px; height: 44px;
-  border: 1.5px solid rgba(99,102,241,0.55); border-radius: 50%;
-  pointer-events: none; z-index: 9998; will-change: transform;
-  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-}
-.cursor-ring--hover { width: 58px; height: 58px; border-color: rgba(168,85,247,0.7); background: rgba(99,102,241,0.05); }
+.cur-ring--snap { border-color: rgba(168,85,247,0.9); background: rgba(99,102,241,0.12); box-shadow: 0 0 0 1px rgba(168,85,247,0.25), 0 0 24px rgba(99,102,241,0.35), inset 0 0 18px rgba(99,102,241,0.12); }
+.cur-ring--text { border-color: rgba(165,180,252,0.9); background: rgba(165,180,252,0.9); box-shadow: 0 0 8px rgba(99,102,241,0.6); }
+.cur-trail { position: fixed; top: -3px; left: -3px; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; z-index: 9998; background: linear-gradient(135deg, #6366f1, #a855f7); opacity: 0; will-change: transform, opacity; }
+.cur-ripple { position: fixed; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; pointer-events: none; z-index: 9998; border: 1.5px solid rgba(168,85,247,0.9); animation: curRipple 0.6s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes curRipple { from { transform: scale(1); opacity: 0.9; } to { transform: scale(7); opacity: 0; } }
+.cur-hidden .cur-core, .cur-hidden .cur-ring, .cur-hidden .cur-trail { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .cur-trail, .cur-ripple { display: none; } .cur-ring { transition: none; } }
+
 .vertical-card, .pricing-card { position: relative; overflow: hidden; }
 
 

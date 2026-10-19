@@ -145,7 +145,7 @@ export default function ScanReport({ id }: { id: string }) {
                   <a className="btn-primary" href="https://cal.com/shayan-vbild/discovery-call" target="_blank" rel="noreferrer">Book 20 minutes with Vbild</a>
                   <Link className="btn-ghost" href={`/for/${cat.id}`}>How we build for {cat.name.toLowerCase()} →</Link>
                 </div>
-                <p className="sr-fine">Pricing starts at Solo ($0 + $29/mo) and custom builds from $3,500. Share this report: <code>{typeof window !== 'undefined' ? window.location.href : ''}</code></p>
+                <p className="sr-fine">Pricing starts at Solo ($0 + $39/mo); custom builds from $479 + $79/mo. Share this report: <code>{typeof window !== 'undefined' ? window.location.href : ''}</code></p>
               </div>
             </div>
             {toast && <div className="ld-toast" style={{ position: 'fixed', bottom: '2rem' }}>{toast}</div>}

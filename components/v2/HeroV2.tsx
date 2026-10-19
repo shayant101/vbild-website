@@ -19,7 +19,7 @@ export default function HeroV2() {
         </h1>
         <p className="hero-sub">Paste your Google Business Profile or website. We read it and show you what to automate, what it costs, and a prototype with your name on it.</p>
         <div className="hero-scan"><ScanBox placeholder="Google Maps link, website, or business name" /></div>
-        <p className="hero-under">Custom apps for restaurants, shops, trades, salons and venues · from $29/mo · built in days, not months.</p>
+        <p className="hero-under">Custom apps for restaurants, shops, trades, salons and venues · from $39/mo · built in days, not months.</p>
       </div>
     </section>
   )

@@ -5,7 +5,8 @@
 /* neutralise marketing-site element styles inside the portal */
 .admin-root section { padding: 0; }
 .admin-root h1, .admin-root h2, .admin-root h3 { line-height: 1.25; }
-body:has(.admin-root) .cursor-dot, body:has(.admin-root) .cursor-ring, body:has(.admin-root) .cursor-spotlight { display: none !important; }
+body:has(.admin-root) .cur { display: none !important; }
+html.cur-on body:has(.admin-root), html.cur-on body:has(.admin-root) * { cursor: auto !important; }
 
 .admin-root {
   --a-bg: #07070f; --a-panel: #0d0d1b; --a-panel2: #12122a;

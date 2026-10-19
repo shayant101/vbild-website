@@ -17,7 +17,7 @@ export default function PricingSection() {
               <span className="grad-text">No agency surprises.</span>
             </h2>
             <p className="section-sub">
-              Start on Solo in five minutes, or get a custom build: one-time fee plus a simple monthly for hosting, support and updates. No contracts.
+              Start on Solo in five minutes. Custom builds start at $479. The bigger plans include the marketing that grows the business — and on Pro, our fee rides on your numbers.
             </p>
           </div>
         </FadeIn>

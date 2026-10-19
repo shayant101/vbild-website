@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 /** Vbild mark: three isometric blocks forming a V. Inline SVG so it scales crisply and themes with CSS. */
 export function Mark({ size = 28, className }: { size?: number; className?: string }) {
@@ -18,5 +21,8 @@ export default function Logo({ href = '/', size = 28, wordmark = true, className
       {wordmark && <span className="logo-word">Vbild</span>}
     </span>
   )
-  return href ? <Link href={href} className="logo-link" aria-label="Vbild home">{inner}</Link> : inner
+  const path = usePathname()
+  if (!href) return inner
+  const onClick = (e: React.MouseEvent) => { if (href === '/' && path === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/') } }
+  return <Link href={href} className="logo-link" aria-label="Vbild home" onClick={onClick}>{inner}</Link>
 }

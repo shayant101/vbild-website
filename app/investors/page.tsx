@@ -42,7 +42,7 @@ export default function InvestorsPage() {
               </div>
               <h1>Custom software for small businesses.<br /><span className="grad-text">Built by AI. Priced like SaaS.</span></h1>
               <p className="inv-lede">
-                Agencies quote independent restaurants, shops and venues {d('agency-cost').range} and ~13 months for the software they need, so most never buy it. Vbild interviews the owner, writes the spec, and ships a working app they own in days, for $3,500–$25,000 plus $99–$499 a month. The margins of software, sold as a service.
+                Agencies quote independent restaurants, shops and venues {d('agency-cost').range} and ~13 months for the software they need, so most never buy it. Vbild interviews the owner, writes the spec, and ships a working app they own in days, for $479–$1,349 up front plus $79–$379 a month. The margins of software, sold as a service.
               </p>
               <div className="inv-actions">
                 <a className="btn-primary" href="mailto:shayan.s.toor@gmail.com?subject=Vbild%20pre-seed%20%E2%80%94%20deck%20request">Request the deck</a>
@@ -129,7 +129,7 @@ export default function InvestorsPage() {
             <FadeIn delay={100}>
               <div className="inv-table-wrap" style={{ marginTop: '2.5rem' }}>
                 <table className="inv-table">
-                  <thead><tr><th>#</th><th>Pros sub-vertical</th><th>US businesses</th><th>Employer firms</th><th>Willingness to pay $99–$499/mo</th></tr></thead>
+                  <thead><tr><th>#</th><th>Pros sub-vertical</th><th>US businesses</th><th>Employer firms</th><th>Willingness to pay $79–$379/mo</th></tr></thead>
                   <tbody>
                     {market.prosMarket.subs.map((r) => <tr key={r.id}><td>{r.rank}</td><td>{r.label}</td><td>{num(r.total)}</td><td>{r.employer ? num(r.employer) : '—'}</td><td>{r.wtp}</td></tr>)}
                   </tbody>
@@ -141,12 +141,12 @@ export default function InvestorsPage() {
               <div className="inv-model-notes" style={{ marginTop: '2rem' }}>
                 <div><h4>Why lead with the trades</h4><p>Plumbing, HVAC and electrical have the lowest solo share (62–66%) and the highest receipts; quoting, dispatch and invoicing justify a custom app. Beauty is 90% booth renters that Square, GlossGenius and Booksy already serve at $0–$50/mo, so it sits in the category, not at the front of it.</p></div>
                 <div><h4>The gap incumbents leave open</h4><p>Jobber and Housecall Pro gate automations, two-way SMS and client portals behind {market.prosMarket.signals[5].value} tiers; pros also pay {market.prosMarket.signals[4].value} per lead to Thumbtack and Angi for leads sold to 4–8 competitors. Realtors: {market.prosMarket.signals[0].value} already spend ≥$250/mo on tech.</p></div>
-                <div><h4>The Square playbook, applied</h4><p>Square reached {market.square.sellers} sellers and {market.square.gpv} GPV by giving micro-merchants a near-free wedge (the reader), flat legible pricing, then vertical bundles. <b>Solo</b> is Vbild&apos;s reader: $0 setup, $29/mo, live in five minutes, and the $3,500–$25,000 custom build is the upsell. Square&apos;s own Oct 2025 plan simplification &ldquo;nearly doubled&rdquo; software attach.</p></div>
+                <div><h4>The Square playbook, applied</h4><p>Square reached {market.square.sellers} sellers and {market.square.gpv} GPV by giving micro-merchants a near-free wedge (the reader), flat legible pricing, then vertical bundles. <b>Solo</b> is Vbild&apos;s reader: $0 setup, $39/mo, live in five minutes; the $479–$1,349 builds and the $189–$379/mo growth tiers are the upsell. Square&apos;s own Oct 2025 plan simplification &ldquo;nearly doubled&rdquo; software attach.</p></div>
               </div>
             </FadeIn>
             <FadeIn delay={220}>
               <div className="inv-funnel">
-                {[['Solo', '$0 + $29/mo', 'self-serve, 5 minutes'], ['Starter', '$3.5K + $99–199/mo', 'single-focus build'], ['Growth', '$8K + $299/mo', 'multi-feature + dashboard'], ['Pro', '$25K + $499/mo', 'platform + agents']].map(([n, p, d], i) => (
+                {[['Solo', '$0 + $39/mo', 'self-serve, 5 minutes'], ['Starter', '$479 + $79/mo', 'first custom app'], ['Growth', '$799 + $189/mo', 'app + growth engine'], ['Pro', '$1,349 + $379/mo', 'we grow it with you']].map(([n, p, d], i) => (
                   <div key={n} className="inv-funnel-step" style={{ ['--i' as string]: i }}><small>{n}</small><b>{p}</b><span>{d}</span></div>
                 ))}
               </div>
@@ -165,14 +165,14 @@ export default function InvestorsPage() {
             </FadeIn>
             <div className="inv-tiers">
               {market.company.pricing.map((p, i) => {
-                const acv = ({ Solo: 348, Starter: market.company.acv.starter, Growth: market.company.acv.growth, Pro: market.company.acv.pro } as Record<string, number>)[p.tier]
+                const acv = ({ Solo: 468, Starter: market.company.acv.starter, Growth: market.company.acv.growth, Pro: market.company.acv.pro } as Record<string, number>)[p.tier]
                 return (
                 <FadeIn key={p.tier} delay={i * 80}>
                   <div className={`inv-tier${p.tier === 'Solo' ? ' solo' : ''}`}>
                     <small>{p.tier}{p.tier === 'Solo' && ' · self-serve wedge'}</small>
                     <b>{p.setup === 0 ? '$0' : `$${num(p.setup)}`}</b>
                     <span>+ ${p.monthlyLow === p.monthlyHigh ? p.monthlyLow : `${p.monthlyLow}–${p.monthlyHigh}`}/mo</span>
-                    <em>{p.tier === 'Solo' ? 'ACV ≈ $348 + payments' : `ACV ≈ $${num(acv)}`}</em>
+                    <em>{p.tier === 'Solo' ? 'ACV ≈ $468 + payments' : `ACV ≈ $${num(acv)}`}</em>
                   </div>
                 </FadeIn>
               )})}
@@ -180,7 +180,7 @@ export default function InvestorsPage() {
             <FadeIn delay={200}>
               <div className="inv-model-notes">
                 <div><h4>Unit economics</h4><p>Blended ACV ${num(market.company.acv.blended)} at a {market.company.acv.mix} tier mix. Setup fees cover delivery cost on day one; subscription (hosting, support, agents) is the recurring base. Target gross margin 70%+ as AI share of delivery rises and the Lahore AI-developer cohort absorbs capacity. <i>Target, not yet audited.</i></p></div>
-                <div><h4>Willingness to pay is proven</h4><p>Toast runs {d('toast-arr').value} ARR and locations. Owner.com passed {d('owner-arr').value} ARR selling independents a $249–$499/mo website. Vbild&apos;s $99–$499/mo sits inside the band small businesses already pay, with custom software instead of a template.</p></div>
+                <div><h4>Willingness to pay is proven</h4><p>Toast runs {d('toast-arr').value} ARR and locations. Owner.com passed {d('owner-arr').value} ARR selling independents a $249–$499/mo website. Vbild&apos;s $39–$379/mo sits inside the band small businesses already pay, with custom software instead of a template.</p></div>
                 <div><h4>From done-for-you to self-serve</h4><p>Every build adds to a shared primitive library (lists, calendars, payments, QR, waivers, age-gates, alerts). The <Link href="/new-world">Living Interface</Link> is the productized core; Bildr is the self-serve front door. Services today, platform margins tomorrow.</p></div>
               </div>
             </FadeIn>
@@ -201,7 +201,7 @@ export default function InvestorsPage() {
                 <div className="inv-q"><small>DIY AI builders</small><b>Lovable · Bolt · Replit · Base44</b><p>$20–$50/mo, but the owner builds, debugs, hosts and maintains. ~60% of projects never ship. Great signal for demand; wrong buyer.</p></div>
                 <div className="inv-q"><small>Agencies &amp; freelancers</small><b>Clutch median $171K · ~13 months</b><p>Custom, but priced for enterprises. 31% of projects finish on time, budget and scope (Standish).</p></div>
                 <div className="inv-q"><small>Vertical SaaS</small><b>Toast · Square · Mindbody</b><p>Polished and rigid: one vertical, no custom workflows, $70–$2,000+/mo stacks. Proves the budget exists.</p></div>
-                <div className="inv-q win"><small>Vbild</small><b>Custom · days · $3.5K–$25K + $99–$499/mo</b><p>We interview, spec, build and run it. Owner gets software shaped to the business and owns the code. Distribution through the payments/POS channel the founder already works in.</p></div>
+                <div className="inv-q win"><small>Vbild</small><b>Custom · days · $479–$1,349 + $79–$379/mo</b><p>We interview, spec, build and run it. Owner gets software shaped to the business and owns the code. Distribution through the payments/POS channel the founder already works in.</p></div>
               </div>
             </FadeIn>
           </div>

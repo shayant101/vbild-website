@@ -18,36 +18,37 @@
       {
         "tier": "Solo",
         "setup": 0,
-        "monthlyLow": 29,
-        "monthlyHigh": 29,
+        "monthlyLow": 39,
+        "monthlyHigh": 39,
         "selfServe": true
       },
       {
         "tier": "Starter",
-        "setup": 3500,
-        "monthlyLow": 99,
-        "monthlyHigh": 199
+        "setup": 479,
+        "monthlyLow": 79,
+        "monthlyHigh": 79
       },
       {
         "tier": "Growth",
-        "setup": 8000,
-        "monthlyLow": 299,
-        "monthlyHigh": 299
+        "setup": 799,
+        "monthlyLow": 189,
+        "monthlyHigh": 189
       },
       {
         "tier": "Pro",
-        "setup": 25000,
-        "monthlyLow": 499,
-        "monthlyHigh": 499
+        "setup": 1349,
+        "monthlyLow": 379,
+        "monthlyHigh": 379
       }
     ],
     "acv": {
-      "starter": 2955,
-      "growth": 6255,
-      "pro": 14321,
-      "blended": 4350,
-      "mix": "70/25/5",
-      "note": "setup amortized over 3 yrs + 12 months subscription"
+      "solo": 468,
+      "starter": 1108,
+      "growth": 2534,
+      "pro": 4998,
+      "blended": 2500,
+      "mix": "40/35/25",
+      "note": "setup amortized over 3 yrs + 12 months subscription; mix Starter/Growth/Pro — the low entry price is designed to upsell into the marketing tiers"
     },
     "traction": {
       "liveApps": 5,
@@ -152,47 +153,47 @@
     }
   ],
   "tamSamSom": {
-    "acv": 4500,
+    "acv": 2500,
     "tam": {
       "businesses": 968000,
-      "value": 4400000000,
+      "value": 2420000000,
       "label": "Core 5 verticals + gyms, auto, dental (ex-salons)",
-      "upper": 9100000000,
+      "upper": 5000000000,
       "upperLabel": "incl. salons"
     },
     "sam": {
       "businesses": 320000,
-      "value": 1400000000,
+      "value": 800000000,
       "label": "Core 5 verticals × ~60% already paying for software",
-      "upper": 2400000000
+      "upper": 1327500000
     },
     "som": [
       {
         "scenario": "Conservative",
         "customers": 300,
-        "acv": 3500,
-        "revenue": 1050000,
-        "subArr": 550000
+        "acv": 1800,
+        "revenue": 540000,
+        "subArr": 300000
       },
       {
         "scenario": "Base",
         "customers": 600,
-        "acv": 4500,
-        "revenue": 2700000,
-        "subArr": 1500000
+        "acv": 2500,
+        "revenue": 1500000,
+        "subArr": 1000000
       },
       {
         "scenario": "Aggressive",
         "customers": 1000,
-        "acv": 5500,
-        "revenue": 5500000,
-        "subArr": 3000000
+        "acv": 3200,
+        "revenue": 3200000,
+        "subArr": 2400000
       }
     ],
     "combined": {
-      "tam": 8400000000,
-      "label": "Places + Venues ($4.4B) + Pros base case ($4.0B)",
-      "note": "Salons counted once (in Pros). Adjacent gyms/auto/dental remain in the original $4.4B."
+      "tam": 4670000000,
+      "label": "Places + Venues + Pros base case at $2,500 blended ACV",
+      "note": "Salons counted once (in Pros). Pricing reset Oct 19, 2026: $0/$479/$799/$1,349 setup + $39/$79/$189/$379 per month."
     }
   },
   "demand": [
@@ -598,24 +599,24 @@
         "employer": 480000,
         "nonemployer": 120000,
         "total": 600000,
-        "tam": 2700000000
+        "tam": 1500000000
       },
       {
         "scenario": "Base",
         "employer": 660000,
         "nonemployer": 240000,
         "total": 900000,
-        "tam": 4000000000
+        "tam": 2250000000
       },
       {
         "scenario": "Aggressive",
         "employer": 860000,
         "nonemployer": 430000,
         "total": 1300000,
-        "tam": 5800000000
+        "tam": 3250000000
       }
     ],
-    "assumptions": "Employer establishments: 80/85/90% above $100K revenue × 50/65/80% already paying for software. Nonemployers: 5/8/12% above $100K × 40/50/60% paying. ACV $4,500.",
+    "assumptions": "Employer establishments: 80/85/90% above $100K revenue × 50/65/80% already paying for software. Nonemployers: 5/8/12% above $100K × 40/50/60% paying. ACV $2,500.",
     "signals": [
       {
         "id": "nar-spend",
