@@ -15,7 +15,7 @@ export default async function PortalLayout({ children }: { children: React.React
     <div className="admin-root">
       <aside className="admin-side">
         <Link href="/admin" className="admin-logo"><Mark size={22} /><b>Vbild</b><span>Team</span></Link>
-        <AdminNav email={session?.email ?? ''} />
+        <AdminNav email={session ? `${session.name} · ${session.email}` : ''} />
       </aside>
       <main className="admin-main">{children}</main>
     </div>

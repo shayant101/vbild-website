@@ -9,6 +9,7 @@ const ITEMS = [
   { href: '/admin/projects', label: 'Projects', ico: '▣' },
   { href: '/admin/agents', label: 'Agents stream', ico: '⚡' },
   { href: '/admin/investors', label: 'Investor room', ico: '◆' },
+  { href: '/admin/team', label: 'Team & devices', ico: '🔑' },
 ]
 
 export default function AdminNav({ email }: { email: string }) {

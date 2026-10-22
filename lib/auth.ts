@@ -1,7 +1,9 @@
 import { SignJWT, jwtVerify } from 'jose'
 
 export const ADMIN_COOKIE = 'vbild_admin'
-const ONE_WEEK = 60 * 60 * 24 * 7
+const ONE_WEEK = 60 * 60 * 24 * 30 // 30 days for passkey sessions
+
+export type Session = { id: string; email: string; name: string; role: 'admin' | 'member' }
 
 function secret() {
   const s = process.env.ADMIN_SESSION_SECRET
@@ -9,50 +11,23 @@ function secret() {
   return new TextEncoder().encode(s)
 }
 
-export function adminConfigured() {
-  return Boolean(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD && secret())
+export function authConfigured() { return Boolean(secret()) }
+
+export async function signSession(s: Session) {
+  const k = secret()
+  if (!k) throw new Error('ADMIN_SESSION_SECRET not set')
+  return new SignJWT({ sub: s.id, email: s.email, name: s.name, role: s.role })
+    .setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime(`${ONE_WEEK}s`).sign(k)
 }
 
-/** Constant-time-ish compare to avoid trivial timing leaks. */
-function safeEqual(a: string, b: string) {
-  if (a.length !== b.length) return false
-  let out = 0
-  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return out === 0
-}
-
-export function checkCredentials(email: string, password: string) {
-  const e = process.env.ADMIN_EMAIL ?? ''
-  const p = process.env.ADMIN_PASSWORD ?? ''
-  if (!e || !p) return false
-  return safeEqual(email.trim().toLowerCase(), e.trim().toLowerCase()) && safeEqual(password, p)
-}
-
-export async function signSession(email: string) {
-  const s = secret()
-  if (!s) throw new Error('ADMIN_SESSION_SECRET not set')
-  return new SignJWT({ sub: email, role: 'admin' })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime(`${ONE_WEEK}s`)
-    .sign(s)
-}
-
-export async function verifySession(token?: string) {
-  const s = secret()
-  if (!s || !token) return null
+export async function verifySession(token?: string): Promise<Session | null> {
+  const k = secret()
+  if (!k || !token) return null
   try {
-    const { payload } = await jwtVerify(token, s)
-    return payload.role === 'admin' ? { email: String(payload.sub) } : null
-  } catch {
-    return null
-  }
+    const { payload } = await jwtVerify(token, k)
+    if (payload.role !== 'admin' && payload.role !== 'member') return null
+    return { id: String(payload.sub), email: String(payload.email), name: String(payload.name || ''), role: payload.role }
+  } catch { return null }
 }
 
-export const sessionCookieOptions = {
-  httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: process.env.NODE_ENV === 'production',
-  path: '/',
-  maxAge: ONE_WEEK,
-}
+export const sessionCookieOptions = { httpOnly: true, sameSite: 'lax' as const, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: ONE_WEEK }

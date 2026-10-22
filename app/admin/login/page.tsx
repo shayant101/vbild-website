@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Mark } from '@/components/Logo'
 import { Suspense } from 'react'
 import '../admin.css'
-import LoginForm from './LoginForm'
-import { adminConfigured } from '@/lib/auth'
+import PasskeyLogin from './PasskeyLogin'
+import { authConfigured } from '@/lib/auth'
+import { teamDbConfigured } from '@/lib/team/db'
+import { Mark } from '@/components/Logo'
 
-export const metadata: Metadata = { title: 'Team login — Vbild', robots: { index: false, follow: false } }
+export const metadata: Metadata = { title: 'Team sign-in — Vbild', robots: { index: false, follow: false } }
 
 export default function LoginPage() {
   return (
@@ -15,9 +16,9 @@ export default function LoginPage() {
         <div className="login-card">
           <Link href="/" className="admin-logo"><Mark size={22} /><b>Vbild</b><span>Team</span></Link>
           <h1>Sign in</h1>
-          <p>Internal portal for the Vbild team — projects, agents, and delivery status.</p>
-          <Suspense fallback={null}><LoginForm configured={adminConfigured()} /></Suspense>
-          <div className="login-foot"><Link href="/">← Back to vbild.ai</Link></div>
+          <p>Use the passkey on this device — Touch ID, Face ID, or your phone.</p>
+          <Suspense fallback={null}><PasskeyLogin configured={authConfigured() && teamDbConfigured()} /></Suspense>
+          <div className="login-foot">New here? Open the invite link an admin sent you. · <Link href="/">vbild.ai</Link></div>
         </div>
       </div>
     </div>

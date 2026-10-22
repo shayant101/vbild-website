@@ -3,7 +3,7 @@ import { ADMIN_COOKIE, verifySession } from '@/lib/auth'
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
-  if (pathname.startsWith('/admin/login')) return NextResponse.next()
+  if (pathname.startsWith('/admin/login') || pathname.startsWith('/admin/invite/')) return NextResponse.next()
 
   const session = await verifySession(req.cookies.get(ADMIN_COOKIE)?.value)
   if (session) return NextResponse.next()
