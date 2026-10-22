@@ -9,6 +9,9 @@ import { getRegistryProjects, listChangeRequests, listWorkItems } from '@/lib/te
 import { AgentRow } from '../../ui'
 import WorkItems from './WorkItems'
 import OdysseyPanel from './OdysseyPanel'
+import RevenuePanel from './RevenuePanel'
+import { listRevenue } from '@/lib/team/revenue'
+import { autoRevenueFor } from '@/lib/team/revenue-auto'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,7 +26,8 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
   const session = await verifySession(jar.get(ADMIN_COOKIE)?.value)
   const isAdmin = session?.role === 'admin'
   const agents = AGENTS.filter((a) => p.agents?.includes(a.id))
-  const [work, requests, registry] = await Promise.all([listWorkItems(id).catch(() => []), listChangeRequests(d.opsIds), getRegistryProjects(d.opsIds)])
+  const [work, requests, registry, revenue, autoRev] = await Promise.all([listWorkItems(id).catch(() => []), listChangeRequests(d.opsIds), getRegistryProjects(d.opsIds), listRevenue(id).catch(() => []), autoRevenueFor(id)])
+  const revenueTotal = Math.round((revenue.reduce((a, r) => a + r.amount, 0) + autoRev.reduce((a, l) => a + l.amount, 0)) * 100) / 100
   const openReqs = requests.filter((r) => !['deployed', 'done', 'rejected'].includes(r.status))
   const delivered = d.delivered.reduce((n, g) => n + g.items.length, 0)
 
@@ -46,6 +50,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
       )}
 
       <div className="kpi-grid">
+        <div className="kpi"><div className="kpi-label">Vbild revenue</div><div className="kpi-value" style={{ color: '#4ade80' }}>${revenueTotal.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div><div className="kpi-sub">made from this project so far</div></div>
         <div className="kpi"><div className="kpi-label">Delivered</div><div className="kpi-value">{delivered || p.features.length}</div><div className="kpi-sub">features live</div></div>
         <div className="kpi"><div className="kpi-label">Open work</div><div className="kpi-value">{work.filter((w) => w.status !== 'done').length}</div><div className="kpi-sub">{work.filter((w) => w.status === 'doing').length} in progress</div></div>
         <div className="kpi"><div className="kpi-label">Change requests</div><div className="kpi-value">{openReqs.length}</div><div className="kpi-sub">{requests.length} total from merchant</div></div>
@@ -95,6 +100,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <RevenuePanel projectId={id} initial={revenue} auto={autoRev} canEdit={isAdmin} />
           <div className="panel"><h3>Summary</h3><p>{p.summary}</p></div>
           <div className="panel">
             <h3>Product pieces</h3>

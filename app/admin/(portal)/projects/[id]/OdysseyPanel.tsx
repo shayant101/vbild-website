@@ -1,6 +1,6 @@
 import { odysseyConfigured } from '@/lib/odyssey/db'
 import { getOdysseyMetrics, type OdysseyMetrics } from '@/lib/odyssey/metrics'
-import { getMercuryAccount, maxPerWeek, mercuryPayoutConfigured, mercuryReadConfigured, refreshPayoutRequests } from '@/lib/odyssey/payouts'
+import { getMercuryAccount, listInFlightToOdyssey, maxPerWeek, mercuryPayoutConfigured, mercuryReadConfigured, refreshPayoutRequests, type InFlight } from '@/lib/odyssey/payouts'
 import { PayoutButton, RefreshStatuses } from './PayoutButton'
 
 const fmt$ = (n: number, d = 0) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
@@ -49,9 +49,20 @@ export default async function OdysseyPanel({ isAdmin }: { isAdmin: boolean }) {
   let error = ''
   try { await refreshPayoutRequests(); m = await getOdysseyMetrics() } catch (e) { error = e instanceof Error ? e.message : 'query failed' }
   if (!m) return <div className="panel"><h3>Money &amp; usage</h3><p style={{ color: '#fca5a5' }}>Could not read the Odyssey ledger: {error}</p></div>
-  const account = mercuryReadConfigured() ? await getMercuryAccount() : null
+  const [account, inFlight] = mercuryReadConfigured() ? await Promise.all([getMercuryAccount(), listInFlightToOdyssey(new Date(Date.now() - 21 * 864e5).toISOString().slice(0, 10))]) : [null, [] as InFlight[]]
   const { money, usage, payouts } = m
   const dueWeeks = payouts.weeks.filter((w) => w.state !== 'paid')
+  // Match pending Mercury transfers to weeks by memo, then by exact amount (same rules as Odyssey's sync)
+  const used = new Set<string>()
+  const flightFor = (w: typeof dueWeeks[number]): InFlight | null => {
+    const byMemo = inFlight.find((f) => !used.has(f.id) && f.memo && f.memo.trim().toLowerCase() === w.memo.toLowerCase())
+    const hit = byMemo ?? inFlight.find((f) => !used.has(f.id) && Math.abs(f.amount - w.due) < 0.005) ?? null
+    if (hit) used.add(hit.id)
+    return hit
+  }
+  const flights = new Map(dueWeeks.map((w) => [w.start, flightFor(w)]))
+  const unmatchedFlights = inFlight.filter((f) => !used.has(f.id))
+  const dueNowNet = Math.round((payouts.dueNow - dueWeeks.filter((w) => (w.state === 'overdue' || w.state === 'due') && flights.get(w.start)).reduce((a, w) => a + w.due, 0)) * 100) / 100
   const paidWeeks = payouts.weeks.filter((w) => w.state === 'paid').length
   const STATE_LABEL: Record<string, string> = { overdue: 'Overdue', due: 'Due today', upcoming: 'Upcoming', paid: 'Paid' }
 
@@ -109,7 +120,9 @@ export default async function OdysseyPanel({ isAdmin }: { isAdmin: boolean }) {
             Each Mon–Sun week pays <b>95% of gross − refunds ± chargebacks</b>, due 10 days after the week ends. Requesting here only creates a Mercury approval — <b>you approve it in Mercury</b>; the Odyssey sync then records it. Cap {fmt$(maxPerWeek())}/week.
             {!mercuryPayoutConfigured() && <> <span style={{ color: '#fbbf24' }}>Payout button is off until <code>MERCURY_PAYOUT_TOKEN</code> is set on vbild.ai.</span></>}
           </p>
-          {payouts.dueNow > 0 && <div className="due-banner">{fmt$(payouts.dueNow, 2)} due now across {dueWeeks.filter((w) => w.state !== 'upcoming').length} week(s)</div>}
+          {dueNowNet > 0 && <div className="due-banner">{fmt$(dueNowNet, 2)} due now across {dueWeeks.filter((w) => w.state !== 'upcoming' && !flights.get(w.start)).length} week(s)</div>}
+          {inFlight.length > 0 && <div className="flight-banner">{fmt$(inFlight.reduce((a, f) => a + f.amount, 0), 2)} in flight in Mercury ({inFlight.length} pending ACH) — recorded in Odyssey automatically once posted.</div>}
+          {!mercuryReadConfigured() && <p style={{ fontSize: '0.78rem', color: 'var(--a-muted2)', marginBottom: '0.8rem' }}>Transfers you send manually in Mercury show here as <i>in flight</i> once <code>MERCURY_API_TOKEN</code> is set; Odyssey records them after they post (1–2 business days).</p>}
           {dueWeeks.length === 0 ? <p style={{ color: '#4ade80' }}>All {paidWeeks} closed weeks are settled. Nothing owed.</p> : (
             <table className="pay-table">
               <thead><tr><th>Week</th><th>Gross</th><th>Refunds</th><th>Adj.</th><th>Owed (95%)</th><th>Still due</th><th>Pay by</th><th>Status</th><th></th></tr></thead>
@@ -117,13 +130,14 @@ export default async function OdysseyPanel({ isAdmin }: { isAdmin: boolean }) {
                 {dueWeeks.map((w) => (
                   <tr key={w.start} className={w.state}>
                     <td><b>{w.memo}</b></td><td>{fmt$(w.gross, 2)}</td><td>{w.refunds ? fmt$(w.refunds, 2) : '—'}</td><td>{w.adjustments ? fmt$(w.adjustments, 2) : '—'}</td><td>{fmt$(w.owed, 2)}</td><td><b>{fmt$(w.due, 2)}</b></td><td>{fmtD(w.dueDate)}</td>
-                    <td>{w.request ? <span className={`status ${w.request.status === 'approved' ? 'live' : 'building'}`}>{w.request.status === 'pendingApproval' ? 'awaiting your approval' : w.request.status}</span> : <span className={`status ${w.state === 'overdue' ? 'overdue' : w.state === 'due' ? 'building' : 'pilot'}`}>{STATE_LABEL[w.state]}</span>}</td>
-                    <td>{!w.request && w.state !== 'upcoming' && <PayoutButton week={w.start} amount={w.due} memo={w.memo} enabled={mercuryPayoutConfigured()} canRequest={isAdmin} />}</td>
+                    <td>{flights.get(w.start) ? <span className="status live" title={`Mercury ${flights.get(w.start)!.id}`}>sent · ACH pending</span> : w.request ? <span className={`status ${w.request.status === 'approved' ? 'live' : 'building'}`}>{w.request.status === 'pendingApproval' ? 'awaiting your approval' : w.request.status}</span> : <span className={`status ${w.state === 'overdue' ? 'overdue' : w.state === 'due' ? 'building' : 'pilot'}`}>{STATE_LABEL[w.state]}</span>}</td>
+                    <td>{!w.request && !flights.get(w.start) && w.state !== 'upcoming' && <PayoutButton week={w.start} amount={w.due} memo={w.memo} enabled={mercuryPayoutConfigured()} canRequest={isAdmin} />}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
+          {unmatchedFlights.length > 0 && <p style={{ fontSize: '0.8rem', color: '#fbbf24', marginTop: '0.6rem' }}>Pending Mercury transfers that don&apos;t match a week: {unmatchedFlights.map((f) => `${fmt$(f.amount, 2)}${f.memo ? ` "${f.memo}"` : ''}`).join(', ')}.</p>}
           <details style={{ marginTop: '1rem' }}>
             <summary style={{ cursor: 'pointer', color: 'var(--a-muted)', fontSize: '0.85rem' }}>Remittance history · {payouts.remittances.length} transfers · {fmt$(money.totalRemitted, 2)}</summary>
             <div className="activity" style={{ marginTop: '0.6rem' }}>

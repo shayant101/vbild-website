@@ -52,6 +52,25 @@ export async function getMercuryAccount(): Promise<Account | null> {
   } catch (e) { console.warn('[odyssey/payouts] account read failed:', e instanceof Error ? e.message : e); return null }
 }
 
+export type InFlight = { id: string; amount: number; status: string; createdAt: string; memo: string; note: string }
+
+/**
+ * Outgoing payments to Odyssey that Mercury has but Odyssey's ledger hasn't recorded yet
+ * (status pending = ACH still in flight; Odyssey's sync only records once posted).
+ */
+export async function listInFlightToOdyssey(sinceDate: string): Promise<InFlight[]> {
+  const t = tok('MERCURY_API_TOKEN') || tok('MERCURY_PAYOUT_TOKEN')
+  if (!t) return []
+  try {
+    const account = await getMercuryAccount(); if (!account) return []
+    const qs = new URLSearchParams({ start: sinceDate, limit: '200' })
+    const { transactions } = await mercury<{ transactions: { id: string; amount: number; status: string; kind: string; createdAt?: string; postedAt?: string | null; counterpartyName?: string | null; counterpartyNickname?: string | null; externalMemo?: string | null; note?: string | null }[] }>(t, 'GET', `/account/${account.id}/transactions?${qs}`)
+    return (transactions ?? [])
+      .filter((x) => x.amount < 0 && x.kind === 'outgoingPayment' && x.status === 'pending' && /odyssey/i.test(`${x.counterpartyName ?? ''} ${x.counterpartyNickname ?? ''}`))
+      .map((x) => ({ id: x.id, amount: Math.abs(x.amount), status: x.status, createdAt: x.createdAt ?? '', memo: x.externalMemo ?? '', note: x.note ?? '' }))
+  } catch (e) { console.warn('[odyssey/payouts] in-flight read failed:', e instanceof Error ? e.message : e); return [] }
+}
+
 /** Poll Mercury for open requests and persist status changes (approved / rejected / cancelled). */
 export async function refreshPayoutRequests(): Promise<void> {
   const d = odb(); const t = tok('MERCURY_API_TOKEN') || tok('MERCURY_PAYOUT_TOKEN')

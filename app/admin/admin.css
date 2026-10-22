@@ -181,3 +181,19 @@ html.cur-on body:has(.admin-root), html.cur-on body:has(.admin-root) * { cursor:
 .piece a { color: #a5b4fc; text-decoration: none; font-weight: 600; }
 .piece small { color: var(--a-muted2); font-size: 0.72rem; }
 @media (max-width: 900px) { .work-add { grid-template-columns: 1fr 1fr; } .bar-row { grid-template-columns: 90px 1fr 36px; } .pay-table { font-size: 0.74rem; } }
+.flight-banner { font-size: 0.85rem; color: #86efac; background: rgba(74,222,128,0.07); border: 1px solid rgba(74,222,128,0.25); border-radius: 10px; padding: 0.55rem 0.8rem; margin-bottom: 0.8rem; }
+.rev-total { display: flex; align-items: baseline; gap: 0.7rem; margin: 0.5rem 0 0.8rem; }
+.rev-total span { font-family: var(--font-space), sans-serif; font-size: 1.9rem; font-weight: 700; letter-spacing: -0.03em; color: #4ade80; }
+.rev-total small { font-size: 0.78rem; color: var(--a-muted); }
+.rev-form { display: grid; grid-template-columns: auto 110px auto auto 1fr auto auto; gap: 0.4rem; align-items: center; margin: 0.4rem 0 0.8rem; }
+.rev-form input, .rev-form select { background: rgba(255,255,255,0.04); border: 1px solid var(--a-border); color: var(--a-text); border-radius: 8px; padding: 0.42rem 0.55rem; font-size: 0.82rem; min-width: 0; }
+.rev-list { display: flex; flex-direction: column; }
+.rev-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 0.7rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--a-border); }
+.rev-row b { font-variant-numeric: tabular-nums; }
+.rev-row.auto { opacity: 0.9; }
+.rev-row .chip { cursor: pointer; }
+.rev-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.rev-table th { text-align: left; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--a-muted2); padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--a-border); }
+.rev-table td { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--a-border); font-variant-numeric: tabular-nums; }
+.rev-table td.num, .rev-table th.num { text-align: right; }
+@media (max-width: 900px) { .rev-form { grid-template-columns: 1fr 1fr; } }
