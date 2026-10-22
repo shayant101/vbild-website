@@ -51,8 +51,8 @@
       "note": "setup amortized over 3 yrs + 12 months subscription; mix Starter/Growth/Pro — the low entry price is designed to upsell into the marketing tiers"
     },
     "traction": {
-      "liveApps": 5,
-      "inBuild": 2,
+      "liveApps": 6,
+      "inBuild": 1,
       "verticals": 5,
       "payingCustomers": {
         "value": null,

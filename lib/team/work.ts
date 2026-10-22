@@ -9,8 +9,7 @@ const ri = (r: Record<string, unknown>): WorkItem => ({ id: r.id as string, proj
 
 export async function listWorkItems(projectId: string): Promise<WorkItem[]> {
   if (!teamDbConfigured()) return []
-  const r = await db()`select * from scan.work_items where project_id = ${projectId} order by (status = 'done'), priority, created_at desc`
-  return r.map(ri)
+  try { const r = await db()`select * from scan.work_items where project_id = ${projectId} order by (status = 'done'), priority, created_at desc`; return r.map(ri) } catch { return [] }
 }
 export async function addWorkItem(projectId: string, title: string, kind: WorkItem['kind'], priority: 1 | 2 | 3, by: string, notes?: string): Promise<WorkItem> {
   const id = newId('w')
@@ -41,4 +40,18 @@ export async function getRegistryProjects(ids: string[]): Promise<RegistryProjec
     const r = await db()`select id, merchant, name, repo_url, vercel_project_id, preview_url, production_url, notes from public.projects where id in ${db()(ids)}`
     return r.map((x) => ({ id: x.id, merchant: x.merchant ?? undefined, name: x.name ?? undefined, repoUrl: x.repo_url ?? undefined, vercelProjectId: x.vercel_project_id ?? undefined, previewUrl: x.preview_url ?? undefined, productionUrl: x.production_url ?? undefined, notes: x.notes ?? undefined }))
   } catch (e) { console.warn('[work] registry read failed', e instanceof Error ? e.message : e); return [] }
+}
+
+/** Open work across all projects (for Today + nav badge). */
+export async function listOpenWorkItems(): Promise<WorkItem[]> {
+  if (!teamDbConfigured()) return []
+  try { const r = await db()`select * from scan.work_items where status <> 'done' order by (status = 'doing') desc, priority, created_at desc`; return r.map(ri) } catch { return [] }
+}
+/** Open merchant change requests across all projects. */
+export async function listOpenChangeRequests(): Promise<ChangeRequest[]> {
+  if (!teamDbConfigured()) return []
+  try {
+    const r = await db()`select id, project_id, merchant, from_name, body, status, tier, category, summary, result, preview_url, created_at, approved_at from public.requests where status not in ('deployed','done','rejected') order by created_at desc limit 50`
+    return r.map((x) => ({ id: Number(x.id), projectId: x.project_id, fromName: x.from_name ?? undefined, body: x.body, status: x.status, tier: x.tier ?? undefined, category: x.category ?? undefined, summary: x.summary ?? undefined, result: x.result ?? undefined, previewUrl: x.preview_url ?? undefined, createdAt: new Date(x.created_at).toISOString(), approvedAt: x.approved_at ? new Date(x.approved_at).toISOString() : undefined }))
+  } catch { return [] }
 }

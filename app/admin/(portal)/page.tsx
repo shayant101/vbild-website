@@ -1,88 +1,93 @@
 import Link from 'next/link'
-import { PROJECTS } from '@/lib/data/portfolio'
-import { AGENTS } from '@/lib/data/agents'
-import { AgentRow, ProjectCard } from './ui'
-import { listRevenue, sumByProject } from '@/lib/team/revenue'
-import { autoRevenueFor } from '@/lib/team/revenue-auto'
+import { loadToday, type Action } from '@/lib/admin/today'
+import { STATUS_LABEL, type ProjectStatus } from '@/lib/data/portfolio'
 
 export const dynamic = 'force-dynamic'
-const fmt$ = (n: number) => (n < 0 ? '−' : '') + '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
 
-export default async function AdminOverview() {
-  const manual = await listRevenue().catch(() => [])
-  const byProj = sumByProject(manual)
-  const autoLines = Object.fromEntries(await Promise.all(PROJECTS.map(async (p) => [p.id, await autoRevenueFor(p.id)] as const)))
-  const rows = PROJECTS.map((p) => { const m = byProj[p.id] ?? { total: 0, byKind: {} }; const auto = (autoLines[p.id] ?? []).reduce((a, l) => a + l.amount, 0); return { p, fees: m.total, share: Math.round(auto * 100) / 100, total: Math.round((m.total + auto) * 100) / 100, setup: m.byKind.setup ?? 0, monthly: m.byKind.monthly ?? 0 } }).filter((r) => r.total !== 0 || r.fees !== 0).sort((a, b) => b.total - a.total)
-  const revenueTotal = Math.round(rows.reduce((a, r) => a + r.total, 0) * 100) / 100
-  const live = PROJECTS.filter((p) => p.status === 'live')
-  const building = PROJECTS.filter((p) => p.status === 'building' || p.status === 'pilot')
-  const prodAgents = AGENTS.filter((a) => a.status === 'production')
-  const verticals = new Set(PROJECTS.map((p) => p.vertical)).size
-  const shipped = PROJECTS.filter((p) => p.daysToShip).map((p) => p.daysToShip!) 
-  const median = shipped.length ? [...shipped].sort((a, b) => a - b)[Math.floor(shipped.length / 2)] : null
+const fmt$ = (n: number, d = 0) => (n < 0 ? '−' : '') + '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
+const pct = (now: number, prev: number) => (prev <= 0 ? null : Math.round(((now - prev) / prev) * 100))
+const ICON: Record<Action['kind'], string> = { payout: '$', lead: '◉', work: '✎', request: '✉', info: 'i', setup: '⚙' }
 
-  const activity = [...PROJECTS]
-    .map((p) => ({ t: p.shipped ?? p.started, p, kind: p.shipped ? 'shipped' : 'started' }))
-    .sort((a, b) => (a.t < b.t ? 1 : -1))
-    .slice(0, 8)
+function Trend({ now, prev }: { now: number; prev: number }) {
+  const p = pct(now, prev)
+  if (p === null) return null
+  return <span className={`trend ${p >= 0 ? 'up' : 'down'}`}>{p >= 0 ? '▲' : '▼'} {Math.abs(p)}%</span>
+}
+
+export default async function Today() {
+  const t = await loadToday()
+  const m = t.odyssey
+  const greeting = (() => { const h = Number(new Date().toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/Los_Angeles' })); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening' })()
+  const needs = t.actions.filter((a) => a.kind !== 'setup' && a.kind !== 'info')
+  const fyi = t.actions.filter((a) => a.kind === 'info' || a.kind === 'setup')
 
   return (
     <>
-      <div className="admin-head">
+      <div className="admin-head compact">
         <div>
-          <h1>Overview</h1>
-          <p>Everything Vbild is building, in one place. {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+          <h1>{greeting}, Shayan</h1>
+          <p>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' })} · {needs.length === 0 ? 'nothing needs you right now' : `${needs.length} thing${needs.length === 1 ? '' : 's'} need you`}</p>
         </div>
-        <Link href="/demo" className="chip on" target="_blank">▶ Open live demo</Link>
+        <div className="head-actions">
+          <Link href="/admin/leads" className="chip">Leads{t.counts.leadsNew ? ` · ${t.counts.leadsNew} new` : ''}</Link>
+          <Link href="/admin/projects/odyssey-vr?tab=payouts" className="chip">Payouts{t.counts.payoutsDue ? ` · ${t.counts.payoutsDue} due` : ''}</Link>
+          <Link href="/scan" className="chip on" target="_blank">Run a scan ↗</Link>
+        </div>
       </div>
 
-      <div className="kpi-grid">
-        <div className="kpi"><div className="kpi-label">Revenue to date</div><div className="kpi-value" style={{ color: '#4ade80' }}>{fmt$(revenueTotal)}</div><div className="kpi-sub">across {rows.length} paying project{rows.length === 1 ? '' : 's'} · fees + rev share, net of Stripe</div></div>
-        <div className="kpi"><div className="kpi-label">Live</div><div className="kpi-value">{live.length}</div><div className="kpi-sub">apps in production</div></div>
-        <div className="kpi"><div className="kpi-label">In build / pilot</div><div className="kpi-value">{building.length}</div><div className="kpi-sub">active engagements</div></div>
-        <div className="kpi"><div className="kpi-label">Agents</div><div className="kpi-value">{prodAgents.length}<span style={{ fontSize: '1rem', color: 'var(--a-muted2)' }}>/{AGENTS.length}</span></div><div className="kpi-sub">in production</div></div>
-        <div className="kpi"><div className="kpi-label">Verticals</div><div className="kpi-value">{verticals}</div><div className="kpi-sub">served so far</div></div>
-        <div className="kpi"><div className="kpi-label">Median ship time</div><div className="kpi-value">{median ?? '—'}<span style={{ fontSize: '1rem', color: 'var(--a-muted2)' }}>d</span></div><div className="kpi-sub">estimate · verify <span className="verify">VERIFY</span></div></div>
+      <div className="stat-strip">
+        <div className="stat-cell"><span className="stat-l">Revenue to date</span><span className="stat-v green">{fmt$(t.revenueTotal)}</span><span className="stat-s">fees + rev share, net of Stripe</span></div>
+        {m && <div className="stat-cell"><span className="stat-l">Odyssey · last 7 days</span><span className="stat-v">{fmt$(m.money.last7.gross)} <Trend now={m.money.last7.gross} prev={m.money.prev7.gross} /></span><span className="stat-s">{m.money.last7.bookings} bookings · {m.usage.upcomingEvents} upcoming events</span></div>}
+        {m && <div className="stat-cell"><span className="stat-l">Owed to Odyssey</span><span className="stat-v amber">{fmt$(m.money.outstandingToMerchant)}</span><span className="stat-s">{t.inFlightTotal > 0 ? `${fmt$(t.inFlightTotal, 2)} in flight · ` : ''}{t.counts.payoutsDue} week{t.counts.payoutsDue === 1 ? '' : 's'} to pay</span></div>}
+        <div className="stat-cell"><span className="stat-l">Leads</span><span className="stat-v">{t.counts.leadsNew}<small> new</small></span><span className="stat-s">{t.leads.length} total from Vbild Scan</span></div>
+        <div className="stat-cell"><span className="stat-l">Open work</span><span className="stat-v">{t.counts.workOpen}</span><span className="stat-s">{t.work.filter((w) => w.status === 'doing').length} in progress · {t.requests.length} merchant requests</span></div>
       </div>
 
-      <section className="admin-section">
-        <div className="admin-section-head"><h2>Money made per project</h2><span style={{ fontSize: '0.75rem', color: 'var(--a-muted2)' }}>Log fees on each project page · rev share is live from the app&apos;s ledger</span></div>
-        <div className="panel">
-          {rows.length === 0 ? <p style={{ color: 'var(--a-muted)' }}>No revenue logged yet.</p> : (
-            <table className="rev-table">
-              <thead><tr><th>Project</th><th className="num">Setup</th><th className="num">Monthly</th><th className="num">Rev share (net)</th><th className="num">Total</th></tr></thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.p.id}>
-                    <td><Link href={`/admin/projects/${r.p.id}`} style={{ color: 'inherit', fontWeight: 600 }}>{r.p.emoji} {r.p.name}</Link> <span style={{ color: 'var(--a-muted2)', fontSize: '0.78rem' }}>· {r.p.client}</span></td>
-                    <td className="num">{r.setup ? fmt$(r.setup) : '—'}</td><td className="num">{r.monthly ? fmt$(r.monthly) : '—'}</td><td className="num">{r.share ? fmt$(r.share) : '—'}</td><td className="num"><b style={{ color: '#4ade80' }}>{fmt$(r.total)}</b></td>
-                  </tr>
-                ))}
-                <tr><td style={{ color: 'var(--a-muted)' }}>Total</td><td className="num">{fmt$(rows.reduce((a, r) => a + r.setup, 0))}</td><td className="num">{fmt$(rows.reduce((a, r) => a + r.monthly, 0))}</td><td className="num">{fmt$(rows.reduce((a, r) => a + r.share, 0))}</td><td className="num"><b>{fmt$(revenueTotal)}</b></td></tr>
-              </tbody>
-            </table>
+      <div className="two-col">
+        <section className="card">
+          <div className="card-head"><h2>Needs you</h2><span className="muted">{needs.length}</span></div>
+          {needs.length === 0 ? <p className="empty">Inbox zero. Payouts are current, no new leads, nothing in progress.</p> : (
+            <div className="action-list">
+              {needs.map((a, i) => (
+                <Link key={i} href={a.href} className={`action tone-${a.tone}`} target={a.href.startsWith('http') ? '_blank' : undefined}>
+                  <span className="action-ico">{ICON[a.kind]}</span>
+                  <span className="action-body"><b>{a.title}</b>{a.sub && <small>{a.sub}</small>}</span>
+                  {a.amount != null && <span className="action-amt">{fmt$(a.amount, 2)}</span>}
+                  <span className="action-go">→</span>
+                </Link>
+              ))}
+            </div>
           )}
-        </div>
-      </section>
-
-      <section className="admin-section">
-        <div className="admin-section-head"><h2>Projects</h2><Link href="/admin/projects">All projects →</Link></div>
-        <div className="proj-grid">{PROJECTS.slice(0, 6).map((p) => <ProjectCard key={p.id} p={p} />)}</div>
-      </section>
-
-      <div className="detail-grid">
-        <section className="admin-section">
-          <div className="admin-section-head"><h2>Agents stream</h2><Link href="/admin/agents">Full stream →</Link></div>
-          <div className="agent-stream">{AGENTS.filter((a) => a.status === 'production').slice(0, 4).map((a) => <AgentRow key={a.id} a={a} />)}</div>
-        </section>
-        <section className="admin-section">
-          <div className="admin-section-head"><h2>Activity</h2></div>
-          <div className="panel activity">
-            {activity.map((a) => (
-              <div className="act" key={a.p.id + a.kind}>
-                <time>{a.t}</time>
-                <div><b>{a.p.name}</b> <span>{a.kind === 'shipped' ? 'shipped' : 'kicked off'} · {a.p.client}</span></div>
+          {fyi.length > 0 && (
+            <details className="fyi">
+              <summary>{fyi.length} FYI / setup</summary>
+              <div className="action-list">
+                {fyi.map((a, i) => (
+                  <Link key={i} href={a.href} className={`action tone-${a.tone}`} target={a.href.startsWith('http') ? '_blank' : undefined}>
+                    <span className="action-ico">{ICON[a.kind]}</span>
+                    <span className="action-body"><b>{a.title}</b>{a.sub && <small>{a.sub}</small>}</span>
+                    <span className="action-go">→</span>
+                  </Link>
+                ))}
               </div>
+            </details>
+          )}
+        </section>
+
+        <section className="card">
+          <div className="card-head"><h2>Projects</h2><Link href="/admin/projects" className="muted-link">All →</Link></div>
+          <div className="proj-rows">
+            {t.projects.map((p) => (
+              <Link key={p.id} href={`/admin/projects/${p.id}`} className="proj-row" style={{ ['--accent' as string]: p.accent }}>
+                <span className="proj-row-emoji">{p.emoji}</span>
+                <span className="proj-row-main"><b>{p.name}</b><small>{p.pulse ?? p.client}</small></span>
+                <span className="proj-row-meta">
+                  {p.revenue > 0 && <span className="tag green">{fmt$(p.revenue)}</span>}
+                  {p.openWork > 0 && <span className="tag">{p.openWork} work</span>}
+                  {p.openRequests > 0 && <span className="tag blue">{p.openRequests} req</span>}
+                  <span className={`status ${p.status}`}>{STATUS_LABEL[p.status as ProjectStatus]}</span>
+                </span>
+              </Link>
             ))}
           </div>
         </section>
